@@ -227,6 +227,38 @@
     line-height: 1.5;
     margin-bottom: 6px;
   }
+  /* ── GLOSSARY TOOLTIPS ── */
+  .tip {
+    border-bottom: 1px dashed var(--muted);
+    cursor: help;
+    position: relative;
+    white-space: nowrap;
+  }
+  .tip::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 0.74rem;
+    font-weight: 400;
+    line-height: 1.5;
+    white-space: normal;
+    min-width: 180px;
+    max-width: 240px;
+    text-align: left;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s;
+    z-index: 99;
+  }
+  .tip:hover::after { opacity: 1; }
+
   /* ── PLAYER IDENTITY CARD ── */
   .player-card {
     display: flex;
@@ -1277,6 +1309,28 @@ const ARCHETYPES = {
   }
 };
 
+// ── GLOSSARY ──
+const GLOSSARY = {
+  'NIMBY':    '鄰避效應（Not In My Back Yard）：民眾反對在自家附近建設核廢料場、焚化爐等設施的心態，即使理解其必要性。',
+  'Onkalo':   '芬蘭的核廢料最終處置場。位於地底約 400 公尺的花崗岩層，設計封存 10 萬年，是目前全球唯一在建的深層地質處置庫。',
+  '非核家園': '2016 年民進黨政府訂定的能源政策目標：2025 年前關閉所有核電廠，以再生能源替代，後因電力缺口問題多次延後。',
+  '最終處置': '核廢料的永久性深層地質儲存，有別於暫存桶。需確保數萬至十萬年的安全隔離，全球尚無完整落實案例。',
+  '備轉容量率': '電力系統備用發電容量占總用電需求的比率。低於 10% 視為供電吃緊，低於 6% 可能發佈限電警告。',
+  '核安審查': '核電廠重啟前須通過的安全評估程序，由原子能委員會執行，包括設備、人員、應變計畫等項目審查。',
+};
+
+function addTooltips(text) {
+  let out = text;
+  for (const [term, def] of Object.entries(GLOSSARY)) {
+    const escaped = def.replace(/"/g, '&quot;');
+    out = out.replace(
+      new RegExp(term, 'g'),
+      `<span class="tip" data-tip="${escaped}">${term}</span>`
+    );
+  }
+  return out;
+}
+
 // ── STANCES ──
 const STANCES = {
   green: {
@@ -1458,10 +1512,10 @@ function loadRound() {
   document.getElementById('round-label').textContent = `第 ${currentRound + 1} 關 / ${total}`;
   document.getElementById('progress-fill').style.width = `${((currentRound + 1) / total) * 100}%`;
 
-  document.getElementById('q-context').textContent = q.context;
+  document.getElementById('q-context').innerHTML = addTooltips(q.context);
   // Use role-specific prompt if available, otherwise fall back to default text
   const promptText = (q.rolePrompts && q.rolePrompts[assignedStance]) ? q.rolePrompts[assignedStance] : q.text;
-  document.getElementById('q-text').textContent = promptText;
+  document.getElementById('q-text').innerHTML = addTooltips(promptText);
 
   const s = STANCES[assignedStance];
   const roleColors = {
@@ -1495,7 +1549,7 @@ function loadRound() {
     btn.className = `choice-btn emotion-${dominant}`;
     btn.innerHTML = `
       <div class="choice-label">${choice.label}</div>
-      <div class="choice-text">${choice.text}</div>
+      <div class="choice-text">${addTooltips(choice.text)}</div>
       <div class="choice-effect">${formatEffects(choice.effects)}</div>
     `;
     btn.onclick = () => selectChoice(i);
@@ -1546,7 +1600,7 @@ function selectChoice(index) {
 
   // Show feedback
   const fb = document.getElementById('feedback-box');
-  fb.textContent = `📊 ${choice.feedback}`;
+  fb.innerHTML = `📊 ${addTooltips(choice.feedback)}`;
   fb.classList.add('show');
 
   document.getElementById('next-btn').classList.add('show');
