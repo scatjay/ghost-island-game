@@ -218,6 +218,8 @@
     background: var(--darker);
     border: 1.5px solid var(--border);
     border-radius: 12px;
+    position: relative;
+    padding-left: 20px;
     padding: 14px 16px;
     text-align: left;
     cursor: pointer;
@@ -226,23 +228,34 @@
     color: var(--text);
     width: 100%;
   }
-  .choice-btn:hover {
-    border-color: #60a5fa;
-    background: rgba(96,165,250,0.05);
-    transform: translateX(4px);
+  /* emotion left bar */
+  .choice-btn::before {
+    content: '';
+    position: absolute; left: 0; top: 8px; bottom: 8px;
+    width: 4px; border-radius: 4px;
+    transition: background 0.15s;
   }
-  .choice-btn.selected-green {
-    border-color: var(--green);
-    background: rgba(22,163,74,0.1);
-  }
-  .choice-btn.selected-blue {
-    border-color: #60a5fa;
-    background: rgba(96,165,250,0.1);
-  }
-  .choice-btn.selected-neutral {
-    border-color: var(--yellow);
-    background: rgba(202,138,4,0.1);
-  }
+  .choice-btn.emotion-rage   { border-color: rgba(220,38,38,0.35); }
+  .choice-btn.emotion-reason { border-color: rgba(96,165,250,0.35); }
+  .choice-btn.emotion-influence { border-color: rgba(202,138,4,0.35); }
+  .choice-btn.emotion-neutral { border-color: rgba(148,163,184,0.25); }
+  .choice-btn.emotion-rage::before   { background: rgba(220,38,38,0.55); }
+  .choice-btn.emotion-reason::before { background: rgba(96,165,250,0.55); }
+  .choice-btn.emotion-influence::before { background: rgba(202,138,4,0.55); }
+  .choice-btn.emotion-neutral::before { background: rgba(148,163,184,0.3); }
+
+  .choice-btn.emotion-rage:hover   { border-color: var(--red); background: rgba(220,38,38,0.07); transform: translateX(4px); }
+  .choice-btn.emotion-reason:hover { border-color: #60a5fa; background: rgba(96,165,250,0.07); transform: translateX(4px); }
+  .choice-btn.emotion-influence:hover { border-color: var(--yellow); background: rgba(202,138,4,0.07); transform: translateX(4px); }
+  .choice-btn.emotion-neutral:hover { border-color: #94a3b8; background: rgba(148,163,184,0.05); transform: translateX(4px); }
+  .choice-btn.emotion-rage:hover::before   { background: var(--red); }
+  .choice-btn.emotion-reason:hover::before { background: #60a5fa; }
+  .choice-btn.emotion-influence:hover::before { background: var(--yellow); }
+  .choice-btn.emotion-neutral:hover::before { background: #94a3b8; }
+
+  .choice-btn.selected-green   { border-color: var(--green); background: rgba(22,163,74,0.1); }
+  .choice-btn.selected-blue    { border-color: #60a5fa; background: rgba(96,165,250,0.1); }
+  .choice-btn.selected-neutral { border-color: var(--yellow); background: rgba(202,138,4,0.1); }
   .choice-btn.disabled { opacity: 0.5; cursor: default; pointer-events: none; }
   .choice-label {
     font-size: 0.72rem;
@@ -1039,7 +1052,12 @@ function loadRound() {
   container.innerHTML = '';
   q.choices.forEach((choice, i) => {
     const btn = document.createElement('button');
-    btn.className = 'choice-btn';
+    const e = choice.effects;
+    const dominant = (e.rage > 0 && e.rage >= Math.max(e.reason||0, e.influence||0, e.cred||0))
+      ? 'rage' : (e.reason > 0 && e.reason >= Math.max(e.rage||0, e.influence||0, e.cred||0))
+      ? 'reason' : (e.influence > 0 && e.influence >= Math.max(e.rage||0, e.reason||0, e.cred||0))
+      ? 'influence' : 'neutral';
+    btn.className = `choice-btn emotion-${dominant}`;
     btn.innerHTML = `
       <div class="choice-label">${choice.label}</div>
       <div class="choice-text">${choice.text}</div>
