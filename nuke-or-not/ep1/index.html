@@ -227,18 +227,24 @@
     line-height: 1.5;
     margin-bottom: 6px;
   }
-  .question-stance-label {
-    font-size: 0.78rem;
-    color: var(--muted);
-    margin-bottom: 16px;
+  /* ── PLAYER IDENTITY CARD ── */
+  .player-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    margin-bottom: 12px;
+    transition: border-color 0.4s ease, background 0.4s ease;
   }
-  .question-stance-label .stance-tag {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 700;
-    font-size: 0.75rem;
-  }
+  .player-card-emoji { font-size: 2rem; line-height: 1; flex-shrink: 0; }
+  .player-card-info  { display: flex; flex-direction: column; gap: 2px; }
+  .player-card-you   { font-size: 0.65rem; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
+  .player-card-name  { font-size: 0.98rem; font-weight: 800; line-height: 1.2; }
+  .player-card-tend  { font-size: 0.72rem; color: var(--muted); }
   .stance-tag.green { background: rgba(22,163,74,0.2); color: var(--green); }
   .stance-tag.blue { background: rgba(29,78,216,0.2); color: #60a5fa; }
   .stance-tag.eco { background: rgba(6,182,212,0.2); color: #22d3ee; }
@@ -734,12 +740,12 @@
       </div>
     </div>
 
+    <!-- 角色識別卡 -->
+    <div class="player-card" id="player-card"></div>
+
     <div class="question-card">
       <div class="question-context" id="q-context"></div>
       <div class="question-text" id="q-text"></div>
-      <div class="question-stance-label">
-        你目前的身份：<span class="stance-tag" id="q-stance-tag"></span>
-      </div>
       <div class="choices" id="choices-container"></div>
       <div class="feedback-box" id="feedback-box"></div>
       <button class="next-btn" id="next-btn" onclick="nextRound()">繼續 →</button>
@@ -1457,10 +1463,25 @@ function loadRound() {
   const promptText = (q.rolePrompts && q.rolePrompts[assignedStance]) ? q.rolePrompts[assignedStance] : q.text;
   document.getElementById('q-text').textContent = promptText;
 
-  const stanceTag = document.getElementById('q-stance-tag');
   const s = STANCES[assignedStance];
-  stanceTag.textContent = s.tagLabel;
-  stanceTag.className = `stance-tag ${s.tagClass}`;
+  const roleColors = {
+    green:'#4ade80', blue:'#60a5fa', eco:'#22d3ee', pragmatic:'#fbbf24',
+    partisan:'#c084fc', engineer:'#a5b4fc', media:'#f9a8d4', exhausted:'#94a3b8'
+  };
+  const rc = roleColors[assignedStance] || '#94a3b8';
+  const emoji = s.label.split(' ')[0];
+  const roleName = s.label.replace(/^\S+\s/, '');
+  const playerCard = document.getElementById('player-card');
+  playerCard.style.borderLeftColor = rc;
+  playerCard.style.background = rc + '14';
+  playerCard.innerHTML = `
+    <div class="player-card-emoji">${emoji}</div>
+    <div class="player-card-info">
+      <div class="player-card-you">你正在扮演</div>
+      <div class="player-card-name" style="color:${rc}">${roleName}</div>
+      <div class="player-card-tend">${s.tendencyLabel}</div>
+    </div>
+  `;
 
   const container = document.getElementById('choices-container');
   container.innerHTML = '';
