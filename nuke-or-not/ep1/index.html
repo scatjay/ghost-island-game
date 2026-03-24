@@ -705,6 +705,12 @@
     font-size: 0.75rem; color: var(--muted);
     border-top: 1px solid rgba(255,255,255,0.06);
   }
+  @keyframes engageBump {
+    0%   { transform: scale(1);    color: var(--muted); }
+    30%  { transform: scale(1.28); color: #f1f5f9; }
+    100% { transform: scale(1);    color: var(--muted); }
+  }
+  .engage-bump { display: inline-block; animation: engageBump 0.45s ease; }
   .fb-action-row {
     display: grid; grid-template-columns: 1fr 1fr 1fr;
     border-top: 1px solid rgba(255,255,255,0.06);
@@ -921,7 +927,7 @@
       <div class="fb-post-body" id="q-context"></div>
       <div class="fb-engage-row">
         <span>👍 ❤️ 😮 <span id="fb-likes">231</span></span>
-        <span>615 則留言</span>
+        <span><span id="fb-comments">615</span> 則留言</span>
       </div>
       <div class="fb-action-row">
         <div class="fb-action-btn">👍 讚</div>
@@ -2238,6 +2244,21 @@ function selectChoice(index) {
 
   document.getElementById('next-btn').classList.add('show');
   updateStatsDisplay(true, oldStats);
+
+  // 讚數 + 留言數微增
+  const likesEl    = document.getElementById('fb-likes');
+  const commentsEl = document.getElementById('fb-comments');
+  if (likesEl)    bumpEngageNum(likesEl,    2, 9);
+  if (commentsEl) bumpEngageNum(commentsEl, 1, 4);
+}
+
+function bumpEngageNum(el, min, max) {
+  const delta = Math.floor(Math.random() * (max - min + 1)) + min;
+  el.textContent = parseInt(el.textContent.replace(/,/g, ''), 10) + delta;
+  el.classList.remove('engage-bump');
+  void el.offsetWidth;
+  el.classList.add('engage-bump');
+  setTimeout(() => el.classList.remove('engage-bump'), 500);
 }
 
 function nextRound() {
