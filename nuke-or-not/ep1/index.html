@@ -823,17 +823,27 @@
 
 <script>
 // ── STATE ──
-let assignedStance = '';   // 'green' or 'blue'
+let assignedStance = '';
 let currentRound = 0;
 let stats = { rage: 0, reason: 0, influence: 0, cred: 0 };
-let naturalTendency = '';  // derived from choices
+let naturalTendency = '';
+let activeQuestions = [];  // selected + shuffled subset of QUESTION_POOL
 
-// ── QUESTIONS DATA ──
-// Based on real comments from the nuclear post (anonymized)
-const QUESTIONS = [
+// ── QUESTION POOL (10 題，每局隨機取 5，順序打亂) ──
+const QUESTION_POOL = [
   {
     context: '📰 3月22日，總統在記者會上說：「重啟核二、核三是基於能源安全考量，不是政治問題。」',
-    text: '你的時間軸炸鍋了。身為被分配到的立場，你第一個念頭是什麼？',
+    text: '你的時間軸炸鍋了。你的第一個念頭是什麼？',
+    rolePrompts: {
+      green: '你的黨做了這件事。時間軸炸鍋了。你的第一個念頭是什麼？',
+      blue: '你等這天等很久了。時間軸炸鍋了。你的第一個念頭是什麼？',
+      eco: '廢料問題還沒解決就要重啟。時間軸炸鍋了。你的第一個念頭是什麼？',
+      pragmatic: '這會讓電費降嗎？時間軸炸鍋了。你的第一個念頭是什麼？',
+      partisan: '這是你陣營反對的政策——但現在換成執政黨在推。你的第一個念頭是什麼？',
+      engineer: '你知道技術細節，但沒人問你。時間軸炸鍋了。你的第一個念頭是什麼？',
+      media: '職業本能讓你第一秒就在想「這怎麼報」。時間軸炸鍋了，你的第一個念頭是什麼？',
+      exhausted: '又來了。時間軸炸鍋了。你的第一個念頭是什麼？',
+    },
     choices: [
       {
         label: '火爆反應',
@@ -868,6 +878,12 @@ const QUESTIONS = [
   {
     context: '💬 有人翻出2021年的舊貼文截圖，上面寫著「我是人，我反核」，配上現在的新聞，問：「現在呢？」',
     text: '這張截圖被瘋狂轉貼。你會怎麼處理？',
+    rolePrompts: {
+      green: '這張截圖在嘲諷你曾經一起走過的人。你會怎麼處理？',
+      blue: '這就是你等的那張截圖。現在你怎麼辦？',
+      partisan: '你一直用的「反核是進步立場」這個框架，現在有點說不清楚了。你會怎麼處理？',
+      media: '你知道這張截圖的傳播邏輯。但你也有自己的感受。你會怎麼處理？',
+    },
     choices: [
       {
         label: '幸災樂禍',
@@ -902,6 +918,11 @@ const QUESTIONS = [
   {
     context: '🏝️ 南部網友留言：「核三在屏東，你們北部人支持重啟，廢料你們要嗎？」這條留言按了64讚。',
     text: '你如何回應這個「南北矛盾」？',
+    rolePrompts: {
+      eco: '「核廢料放哪裡」正是你一直在問的問題。你如何回應這個「南北矛盾」？',
+      engineer: '你知道NIMBY（鄰避效應）問題在技術上有方案，在政治上很難。你如何回應這個「南北矛盾」？',
+      pragmatic: '屏東的事離你很遠，但電費離你很近。你如何回應這個「南北矛盾」？',
+    },
     choices: [
       {
         label: '怒轟地域牌',
@@ -998,6 +1019,207 @@ const QUESTIONS = [
         effects: { rage: 0, reason: 0, influence: -20, cred: 0 },
         tendency: 'neutral',
         feedback: '政治疲勞是真實的。但「誰管那麼多」也是一種選擇——讓別人代替你決定。'
+      }
+    ]
+  },
+  // ── 以下為擴充題庫（隨機抽選）──
+  {
+    context: '🏭 台積電南科擴廠計畫曝光，有分析師說 2030 年台積電一家的用電量將占全島 15%。某立委說：「沒有核電，護國神山護不了。」',
+    text: '「護國神山需要電」這個框架在留言區很強勢。你的反應？',
+    rolePrompts: {
+      pragmatic: '這終於說到重點了——電力夠不夠和你的帳單有直接關係。你的反應？',
+      engineer: '台積電用電是實質問題，但把它跟核電捆在一起是在簡化問題。你的反應？',
+      eco: '把台積電電力需求拿來為核電背書，這讓你很不舒服。你的反應？',
+      green: '「護國神山」論述是你的黨在製造的，還是在被對方利用？你的反應？',
+    },
+    choices: [
+      {
+        label: '強力支持',
+        text: '「完全正確！台灣競爭力靠穩定電力，沒有核電就是在跟自己過不去。」',
+        effects: { rage: +10, reason: +5, influence: +20, cred: -10 },
+        tendency: 'blue',
+        feedback: '「護國神山需要電」是這次討論中最有效的支持論點，按讚數通常很高。但它把複雜的能源問題壓縮成了單一因果。'
+      },
+      {
+        label: '質疑框架',
+        text: '「台積電用電是事實，但這不代表只有核電一個解法。再生能源和儲能技術呢？」',
+        effects: { rage: -5, reason: +25, influence: +5, cred: +15 },
+        tendency: 'neutral',
+        feedback: '在留言區，「對，但是」的回應往往被兩邊攻擊——一邊說你反核，一邊說你不懂能源。'
+      },
+      {
+        label: '拆解時間軸',
+        text: '「核電重啟至少需要 5-10 年，台積電 2026 年就要電，你算過時間嗎？」',
+        effects: { rage: +10, reason: +20, influence: +10, cred: +5 },
+        tendency: 'neutral',
+        feedback: '時間軸問題確實是核電論者難以回答的。重啟不是馬上有電，這個事實很多人沒意識到。'
+      },
+      {
+        label: '拉回帳單',
+        text: '「少說廢話，先搞定電費再說。現在帳單漲了多少你知道嗎？」',
+        effects: { rage: +15, reason: -5, influence: +15, cred: -15 },
+        tendency: 'neutral',
+        feedback: '把抽象的能源政策拉到個人帳單層面，是一種有效的情緒轉移，但迴避了政策討論的核心。'
+      }
+    ]
+  },
+  {
+    context: '🏝️ 達悟族代表出現在媒體上：「蘭嶼核廢料桶已嚴重銹蝕，遷移計畫一再跳票。政府在談重啟，我們的問題你們忘了嗎？」',
+    text: '達悟族的聲音被放入這場討論。你怎麼回應？',
+    rolePrompts: {
+      eco: '這是你最重視的議題之一——核廢料問題在蘭嶼早就是現在進行式。你怎麼回應？',
+      green: '這發生在你的黨執政期間也沒有解決。你怎麼回應？',
+      blue: '你知道蘭嶼核廢料問題，但你覺得它被拿來當反核電的政治工具。你怎麼回應？',
+      engineer: '蘭嶼的問題是核廢料管理問題，技術上有解，政治上卡住了。你怎麼回應？',
+    },
+    choices: [
+      {
+        label: '先解決再說',
+        text: '「蘭嶼核廢料必須先處理，才有資格談重啟核電。這是最基本的誠信問題。」',
+        effects: { rage: -5, reason: +20, influence: +5, cred: +20 },
+        tendency: 'green',
+        feedback: '這是跨越藍綠的共識點之一——即使支持核電，許多人也承認蘭嶼問題必須先處理。'
+      },
+      {
+        label: '切割議題',
+        text: '「蘭嶼是獨立議題，不應跟核電是否重啟綁在一起討論。混為一談是在製造情緒。」',
+        effects: { rage: +5, reason: +10, influence: +5, cred: -5 },
+        tendency: 'blue',
+        feedback: '「切割議題」策略在政治上常見，但批評者認為是在迴避責任。留言區會有人追問：那蘭嶼什麼時候處理？'
+      },
+      {
+        label: '歷史正義',
+        text: '「達悟族承受了島上的能源代價幾十年，卻從未被平等對待。這不只是環保問題，是歷史不正義。」',
+        effects: { rage: -10, reason: +15, influence: 0, cred: +25 },
+        tendency: 'green',
+        feedback: '從歷史正義角度談蘭嶼，是留言區最不常見也最有深度的回應。但它往往在政治討論的噪音中被淹沒。'
+      },
+      {
+        label: '略過不回',
+        text: '（你看了看，決定不回覆這個。這個問題太複雜了。）',
+        effects: { rage: 0, reason: 0, influence: -10, cred: +5 },
+        tendency: 'neutral',
+        feedback: '在留言區，複雜的問題往往被跳過。「太複雜」本身就是一種政治答案。'
+      }
+    ]
+  },
+  {
+    context: '🏛️ 執政黨內某派系立委開記者會：「總統宣布重啟評估，但黨內沒有充分討論，這不是黨的決定。」黨主席隨後也表示「尊重個人意見」。',
+    text: '你怎麼看這個黨內公開分裂？',
+    rolePrompts: {
+      green: '你的黨出現內部矛盾。你是感到希望，還是更失望？你怎麼看這個黨內公開分裂？',
+      partisan: '你一直把反核當成你陣營的立場，但現在誰才是「你的陣營」？你怎麼看這個黨內公開分裂？',
+      blue: '執政黨內部開始吵架——你感到的是痛快還是警覺？你怎麼看這個黨內公開分裂？',
+      media: '你的職業直覺告訴你這是個報導角度。但作為一個有立場的人，你怎麼看這個黨內公開分裂？',
+    },
+    choices: [
+      {
+        label: '笑看吃瓜',
+        text: '「哈哈，當年一起反核的現在撕起來了，比任何政治劇都精彩。」',
+        effects: { rage: +15, reason: -10, influence: +20, cred: -15 },
+        tendency: 'blue',
+        feedback: '黨內分裂讓批評者振奮，讓支持者困惑。這種吃瓜心態是真實的，但迴避了政策本身的問題。'
+      },
+      {
+        label: '這叫民主',
+        text: '「這才是正常政黨應有的樣子——不同意見可以公開說，不照黨紀走。」',
+        effects: { rage: -5, reason: +20, influence: 0, cred: +20 },
+        tendency: 'neutral',
+        feedback: '「黨內民主」是少數在這次討論中能跨越立場獲得共感的說法——但它可能也是一種過度樂觀的解讀。'
+      },
+      {
+        label: '問誰負責',
+        text: '「黨說沒共識，總統說不是政治問題——那這個決定到底是誰做的？誰負責？」',
+        effects: { rage: +10, reason: +20, influence: +5, cred: +10 },
+        tendency: 'neutral',
+        feedback: '問責問題是這波討論裡最難被回答的——決策者不清楚，責任也就可以一直推。'
+      },
+      {
+        label: '回歸政策',
+        text: '「不管黨怎麼吵，問題還是那幾個：核安、核廢、民意。黨內分裂只是表演。」',
+        effects: { rage: -10, reason: +25, influence: -5, cred: +15 },
+        tendency: 'neutral',
+        feedback: '把焦點從政黨戲劇拉回政策實質，是理性討論的最難動作，也是最少人能做到的。'
+      }
+    ]
+  },
+  {
+    context: '👷 一名自稱在核三廠服務 15 年的工程師留言：「我比你們所有人更了解廠裡的狀況。我不反對重啟，但你們討論的方向讓我很無奈——因為真正的問題根本沒有人提到。」（418 讚）',
+    text: '418 讚的工程師說「真正的問題沒人提」。你怎麼回應？',
+    rolePrompts: {
+      engineer: '你也是理工背景，你很想知道「真正的問題」是什麼，但也對這種賣關子感到煩躁。你怎麼回應？',
+      eco: '你對「我是專家所以我支持核電」這種論述很警惕。你怎麼回應？',
+      media: '這是一個絕佳的採訪對象。但你現在是用個人帳號留言，不是用媒體身份。你怎麼回應？',
+      exhausted: '又一個說「你們不懂」但不說清楚的人。你的反應？',
+    },
+    choices: [
+      {
+        label: '請你說清楚',
+        text: '「那你說。你說了 15 年工作經驗，真正的問題是什麼？別賣關子。」',
+        effects: { rage: +10, reason: +15, influence: +10, cred: +5 },
+        tendency: 'neutral',
+        feedback: '「賣關子」式的權威發言在留言區很常見。要求對方說清楚是正當的——但往往換來「說了也沒用」的回應。'
+      },
+      {
+        label: '尊重專業',
+        text: '「謝謝現場人員的聲音。你說的話比任何政治人物都可信。」',
+        effects: { rage: -5, reason: +10, influence: +5, cred: +15 },
+        tendency: 'blue',
+        feedback: '「尊重專業」值得肯定，但如果對方不願說清楚，這種尊重並不能推進討論。'
+      },
+      {
+        label: '質疑身份',
+        text: '「誰知道你真的是不是核三廠員工？匿名留言，隨便說說。」',
+        effects: { rage: +20, reason: -5, influence: +15, cred: -20 },
+        tendency: 'neutral',
+        feedback: '在網路上質疑對方身份是合理的，但這個動作本身往往被認為是在逃避討論。對方有沒有道理跟身份無關。'
+      },
+      {
+        label: '共鳴但無力',
+        text: '「我懂你說的無奈。這場討論從一開始就是各說各話，專業意見根本進不去。」',
+        effects: { rage: -10, reason: +15, influence: -5, cred: +10 },
+        tendency: 'neutral',
+        feedback: '認知到討論品質低落，但選擇了沮喪而不是行動。這是留言區裡很多人最後的心情。'
+      }
+    ]
+  },
+  {
+    context: '📱 一名 1998 年出生的人在原帖留言：「你們吵了三十年廢核不廢核。我翻了一下，核廢料問題 1990 年代就有了。我 2000 年出生，廢料比我還老。然後你們說要我們承擔？這個留言區就是為什麼我不想討論政治。」（1.2k 讚）',
+    text: '這則留言在 Z 世代被瘋狂轉發。你怎麼回應這代際控訴？',
+    rolePrompts: {
+      exhausted: '你自己也有類似的疲憊感，但你是比這個孩子更老的世代。你怎麼回應這代際控訴？',
+      eco: '廢料比人還老這件事你早就知道，但聽到 1998 年出生的人說出來，感覺還是不一樣。你怎麼回應？',
+      green: '這個孩子說的，有一部分是你的黨在幾十年執政期間沒解決的事。你怎麼回應？',
+      media: '「代際創傷」是個好報導角度。但你現在是用個人帳號留言。你怎麼回應這代際控訴？',
+    },
+    choices: [
+      {
+        label: '承認虧欠',
+        text: '「你說的對。我們這代人讓這個問題拖了太久。對不起。」',
+        effects: { rage: -15, reason: +10, influence: -5, cred: +30 },
+        tendency: 'neutral',
+        feedback: '在島上的政治討論中，「承認虧欠」是最少見的回應，但往往是最能打開對話的一種。'
+      },
+      {
+        label: '反駁情緒',
+        text: '「1.2k 讚不等於你說的是對的。廢料問題複雜，這樣說是在簡化問題。」',
+        effects: { rage: +15, reason: +10, influence: +10, cred: -10 },
+        tendency: 'neutral',
+        feedback: '反駁 Z 世代留言在四十歲以上用戶中很常見。問題是：對方說的事實部分完全正確，反駁情緒讓自己顯得更站不住腳。'
+      },
+      {
+        label: '共鳴轉分享',
+        text: '「這是這條貼文裡最清醒的聲音。轉。」',
+        effects: { rage: -5, reason: +5, influence: +20, cred: +10 },
+        tendency: 'neutral',
+        feedback: '「轉」是一種有力的行動，但它本身不是答案。1.2k 讚加了你的一個，廢料還是在那裡。'
+      },
+      {
+        label: '鼓勵繼續',
+        text: '「你說得好。但「不想討論政治」才是讓這種情況持續的原因之一。我懂你的疲憊，但我希望你不要放棄。」',
+        effects: { rage: -10, reason: +20, influence: +10, cred: +20 },
+        tendency: 'neutral',
+        feedback: '鼓勵 Z 世代繼續參與而不是批評或共鳴，是一種需要定力才能維持的回應方式。'
       }
     ]
   }
@@ -1199,9 +1421,20 @@ function reshuffleAndContinue() {
   assignStance();
 }
 
+function buildActiveQuestions() {
+  // Fisher-Yates shuffle of full pool
+  const pool = [...QUESTION_POOL];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  activeQuestions = pool.slice(0, 5);
+}
+
 function startGame() {
   currentRound = 0;
   stats = { rage: 0, reason: 0, influence: 0, cred: 0 };
+  buildActiveQuestions();
   showScreen('screen-game');
   loadRound();
   // brief entrance animation: bars rise to small seed values
@@ -1213,14 +1446,16 @@ function startGame() {
 
 // ── GAME LOGIC ──
 function loadRound() {
-  const q = QUESTIONS[currentRound];
-  const total = QUESTIONS.length;
+  const q = activeQuestions[currentRound];
+  const total = activeQuestions.length;
 
   document.getElementById('round-label').textContent = `第 ${currentRound + 1} 關 / ${total}`;
   document.getElementById('progress-fill').style.width = `${((currentRound + 1) / total) * 100}%`;
 
   document.getElementById('q-context').textContent = q.context;
-  document.getElementById('q-text').textContent = q.text;
+  // Use role-specific prompt if available, otherwise fall back to default text
+  const promptText = (q.rolePrompts && q.rolePrompts[assignedStance]) ? q.rolePrompts[assignedStance] : q.text;
+  document.getElementById('q-text').textContent = promptText;
 
   const stanceTag = document.getElementById('q-stance-tag');
   const s = STANCES[assignedStance];
@@ -1299,7 +1534,7 @@ function selectChoice(index) {
 
 function nextRound() {
   currentRound++;
-  if (currentRound >= QUESTIONS.length) {
+  if (currentRound >= activeQuestions.length) {
     showResult();
   } else {
     loadRound();
