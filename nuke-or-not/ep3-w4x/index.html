@@ -535,8 +535,18 @@ let currentRound = 0;
 let stats = { opinion: 30, trust: 50, political: 60 };
 let strategyCounts = { science: 0, compensate: 0, listen: 0, authority: 0 };
 let responsePending = false;
+let shuffledSpeakers = [];
 
 function clamp(v) { return Math.max(0, Math.min(100, v)); }
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 // ════════════════════════════════════════
 // SITE SELECT
@@ -549,7 +559,9 @@ function goToSiteSelect() {
 function renderSiteGrid() {
   const grid = document.getElementById('site-grid');
   grid.innerHTML = '';
-  SITES.forEach(site => {
+  const normal = shuffle(SITES.filter(s => !s.isSpecial));
+  const special = SITES.filter(s => s.isSpecial);
+  [...normal, ...special].forEach(site => {
     const div = document.createElement('div');
     div.className = `site-option${site.isSpecial ? ' danger-opt' : ''}`;
     div.id = 'site-opt-' + site.id;
@@ -583,6 +595,7 @@ function confirmSite() {
   currentRound = 0;
   stats = { opinion: 30, trust: 50, political: 60 };
   strategyCounts = { science: 0, compensate: 0, listen: 0, authority: 0 };
+  shuffledSpeakers = shuffle(SPEAKERS_BY_SITE[selectedSiteId]);
   showScreen('screen-hearing');
   const site = SITES.find(s => s.id === selectedSiteId);
   document.getElementById('hearing-location-label').textContent = `📍 公聽會地點：${site.name}`;
@@ -593,7 +606,7 @@ function confirmSite() {
 // HEARING
 // ════════════════════════════════════════
 function renderHearing() {
-  const speakers = SPEAKERS_BY_SITE[selectedSiteId];
+  const speakers = shuffledSpeakers;
   const speaker = speakers[currentRound];
   responsePending = false;
 
