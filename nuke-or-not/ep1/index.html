@@ -1374,7 +1374,7 @@ function assignStance() {
     if (rerollEl) {
       rerollEl.innerHTML = `
         <div style="padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid var(--border);text-align:center;">
-          <div style="font-size:0.95rem;font-weight:800;color:var(--text);margin-bottom:6px;">你已體驗完全部 8 種立場 🎉</div>
+          <div style="font-size:0.95rem;font-weight:800;color:var(--text);margin-bottom:6px;">全部被你選完了 🎉</div>
           <div style="font-size:0.84rem;color:var(--muted);margin-bottom:12px;">你到底要不要玩？</div>
           <button onclick="reshuffleAndContinue()" style="background:var(--orange);color:white;border:none;border-radius:8px;padding:8px 22px;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;">要！重新骰一輪 ↺</button>
         </div>`;
@@ -1406,7 +1406,7 @@ function assignStance() {
     if (stancePool.length === 0) {
       rerollEl.innerHTML = `
         <div style="padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid var(--border);text-align:center;">
-          <div style="font-size:0.95rem;font-weight:800;color:var(--text);margin-bottom:6px;">你已體驗完全部 8 種立場 🎉</div>
+          <div style="font-size:0.95rem;font-weight:800;color:var(--text);margin-bottom:6px;">全部被你選完了 🎉</div>
           <div style="font-size:0.84rem;color:var(--muted);margin-bottom:12px;">你到底要不要玩？</div>
           <button onclick="reshuffleAndContinue()" style="background:var(--orange);color:white;border:none;border-radius:8px;padding:8px 22px;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;">要！重新骰一輪 ↺</button>
         </div>`;
