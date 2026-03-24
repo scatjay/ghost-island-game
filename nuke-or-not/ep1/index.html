@@ -342,6 +342,8 @@
     border-radius: 99px;
     transition: width 0.5s ease;
   }
+  @keyframes statPulse { 0%{opacity:1} 30%{opacity:0.35} 70%{opacity:1} 100%{opacity:1} }
+  .stat-fill.flash { animation: statPulse 0.45s ease; }
   .stat-fill.rage { background: var(--red); }
   .stat-fill.reason { background: #60a5fa; }
   .stat-fill.influence { background: var(--yellow); }
@@ -794,7 +796,7 @@
       </div>
     </div>
 
-    <button class="retry-btn" onclick="retry()">↺ 重新測驗（換個立場）</button>
+    <button class="retry-btn" onclick="retry()">↺ 重玩遊戲（換個立場）</button>
 
     <div class="game-footer">
       府城數位人文實驗室<br>
@@ -1148,6 +1150,11 @@ function startGame() {
   stats = { rage: 0, reason: 0, influence: 0, cred: 0 };
   showScreen('screen-game');
   loadRound();
+  // brief entrance animation: bars rise to small seed values
+  setTimeout(() => {
+    stats = { rage: 8, reason: 10, influence: 6, cred: 12 };
+    updateStatsDisplay(false);
+  }, 300);
 }
 
 // ── GAME LOGIC ──
@@ -1230,7 +1237,7 @@ function selectChoice(index) {
   fb.classList.add('show');
 
   document.getElementById('next-btn').classList.add('show');
-  updateStatsDisplay();
+  updateStatsDisplay(true);
 }
 
 function nextRound() {
@@ -1242,10 +1249,17 @@ function nextRound() {
   }
 }
 
-function updateStatsDisplay() {
+function updateStatsDisplay(flash) {
   ['rage', 'reason', 'influence', 'cred'].forEach(k => {
     document.getElementById(`stat-${k}`).textContent = stats[k];
-    document.getElementById(`fill-${k}`).style.width = stats[k] + '%';
+    const fill = document.getElementById(`fill-${k}`);
+    fill.style.width = stats[k] + '%';
+    if (flash && stats[k] > 0) {
+      fill.classList.remove('flash');
+      void fill.offsetWidth; // reflow to restart animation
+      fill.classList.add('flash');
+      setTimeout(() => fill.classList.remove('flash'), 500);
+    }
   });
 }
 

@@ -65,6 +65,33 @@
   .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--muted); }
   .btn-secondary:hover { border-color: var(--yellow); color: var(--text); }
 
+  /* ── ROLE SELECTION ── */
+  .role-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .role-card {
+    background: var(--card); border: 2px solid var(--border);
+    border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.15s;
+  }
+  .role-card:hover { border-color: var(--yellow); }
+  .role-card.selected { border-color: var(--yellow); background: rgba(217,119,6,0.08); }
+  .role-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .role-emoji { font-size: 1.8rem; flex-shrink: 0; }
+  .role-name { font-size: 1.05rem; font-weight: 800; }
+  .role-tag {
+    display: inline-block; font-size: 0.68rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px; margin-top: 2px;
+  }
+  .role-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
+  .role-stats { display: flex; gap: 8px; font-size: 0.72rem; }
+  .role-stat { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; }
+  .role-stat span { color: var(--muted); }
+  /* role indicator in hearing */
+  .role-badge-inline {
+    display: inline-block; font-size: 0.7rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 12px; background: rgba(217,119,6,0.15);
+    color: var(--yellow); border: 1px solid rgba(217,119,6,0.3);
+    margin-left: 8px; vertical-align: middle;
+  }
+
   /* ── SITE SELECTION ── */
   .phase-title { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
   .phase-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
@@ -210,16 +237,16 @@
     <div class="intro-header">
       <div class="series-badge">鬼島鄉民測驗 · 核電篇 EP.3</div>
       <h1 class="game-title">核廢料放你家？</h1>
-      <p class="game-subtitle">你是能源部長。你必須開公聽會。</p>
+      <p class="game-subtitle">選擇你的身份，召開公聽會。</p>
     </div>
 
     <div class="briefing">
-      島上核電廠的廢料儲存設施即將飽和。你必須選定一個地點，召開<strong>公聽會</strong>，說服當地居民接受。<br><br>
+      島上核電廠的廢料儲存設施即將飽和。必須選定一個地點，召開<strong>公聽會</strong>，說服當地居民接受。<br><br>
       <strong>五個聲音</strong>會依序上台質詢你。每一次你的回應，都會影響<strong>民意接受度</strong>、<strong>社會信任</strong>，以及你的<strong>政治存活</strong>。<br><br>
       沒有人會滿意。問題是，你能讓多少人勉強點頭。
     </div>
 
-    <button class="btn btn-primary" onclick="goToSiteSelect()">接受任命，選擇開會地點 →</button>
+    <button class="btn btn-primary" onclick="goToRoleSelect()">選擇身份，開始 →</button>
 
     <div class="game-footer">
       公聽會模擬機制 · 場景參照真實能源政策爭議<br>
@@ -228,6 +255,18 @@
         <a class="ep-link released" href="../ep2-k9r/">✓ EP.2 您有615則留言</a>
         <a class="ep-link current" href="#">▶ EP.3 核廢料放你家</a>
       </div>
+    </div>
+  </div>
+
+  <!-- ═══ ROLE SELECT ═══ -->
+  <div id="screen-role" class="screen">
+    <div class="series-badge">鬼島鄉民測驗 · 核電篇 EP.3</div>
+    <div class="phase-title">你是誰？</div>
+    <p class="phase-sub">不同身份有不同的籌碼，也有不同的死法。</p>
+    <div class="role-grid" id="role-grid"></div>
+    <button class="btn btn-primary" id="role-confirm-btn" onclick="confirmRole()" disabled>確認身份，選擇開會地點 →</button>
+    <div style="margin-top:10px;">
+      <button class="btn btn-secondary" onclick="showScreen('screen-intro')">← 返回</button>
     </div>
   </div>
 
@@ -254,7 +293,7 @@
 
     <div class="hearing-header">
       <div class="hearing-location" id="hearing-location-label">📍 地點：</div>
-      <div class="hearing-title">發言人上台陳述</div>
+      <div class="hearing-title">發言人上台陳述 <span class="role-badge-inline" id="role-badge-inline"></span></div>
     </div>
 
     <div class="meters">
@@ -526,9 +565,52 @@ const RESPONSES = [
 ];
 
 // ════════════════════════════════════════
+// ROLES
+// ════════════════════════════════════════
+const ROLES = {
+  minister: {
+    id: 'minister', emoji: '🏛️', title: '能源部長',
+    tag: '中央政府', tagBg: 'rgba(217,119,6,0.2)', tagColor: '#fbbf24',
+    desc: '你被任命來解決這個問題。手上有預算、有行政命令、有公關團隊。你的失敗是整個政府的失敗。',
+    start: { opinion: 30, trust: 50, political: 60 },
+    effects: {
+      science:    { opinion: +5,  trust: +8,  political: +3 },
+      compensate: { opinion: +15, trust: -8,  political: +5 },
+      listen:     { opinion: +8,  trust: +12, political: -5 },
+      authority:  { opinion: -12, trust: -15, political: +10 }
+    }
+  },
+  mayor: {
+    id: 'mayor', emoji: '🗳️', title: '在地縣長',
+    tag: '地方政府', tagBg: 'rgba(22,163,74,0.2)', tagColor: '#4ade80',
+    desc: '你是選出來的，不是任命的。這裡是你的選區、你的鄰居、你的選票。你比任何人都了解這片土地，也比任何人都更無法逃避後果。',
+    start: { opinion: 50, trust: 68, political: 35 },
+    effects: {
+      science:    { opinion: +4,  trust: +10, political: +2 },
+      compensate: { opinion: +10, trust: -14, political: +3 },
+      listen:     { opinion: +12, trust: +18, political: -8 },
+      authority:  { opinion: -18, trust: -20, political: +7 }
+    }
+  },
+  corporate: {
+    id: 'corporate', emoji: '⚡', title: '電力公司代言人',
+    tag: '電力公司', tagBg: 'rgba(37,99,235,0.2)', tagColor: '#93c5fd',
+    desc: '你代表電力公司。你有最詳細的技術數據、最充足的補償預算，也有最低的公眾信任度。每個人都覺得你有所圖——因為確實如此。',
+    start: { opinion: 15, trust: 25, political: 75 },
+    effects: {
+      science:    { opinion: +8,  trust: +10, political: +2 },
+      compensate: { opinion: +22, trust: -16, political: +7 },
+      listen:     { opinion: +5,  trust: +7,  political: -7 },
+      authority:  { opinion: -18, trust: -22, political: +12 }
+    }
+  }
+};
+
+// ════════════════════════════════════════
 // STATE
 // ════════════════════════════════════════
 let selectedSiteId = null;
+let selectedRoleId = 'minister';
 let currentRound = 0;
 let stats = { opinion: 30, trust: 50, political: 60 };
 let strategyCounts = { science: 0, compensate: 0, listen: 0, authority: 0 };
@@ -549,6 +631,51 @@ function shuffle(arr) {
 // ════════════════════════════════════════
 // SITE SELECT
 // ════════════════════════════════════════
+function goToRoleSelect() {
+  showScreen('screen-role');
+  renderRoleGrid();
+}
+
+function renderRoleGrid() {
+  const grid = document.getElementById('role-grid');
+  grid.innerHTML = '';
+  Object.values(ROLES).forEach(role => {
+    const div = document.createElement('div');
+    div.className = `role-card${selectedRoleId === role.id ? ' selected' : ''}`;
+    div.onclick = () => selectRole(role.id);
+    const s = role.start;
+    div.innerHTML = `
+      <div class="role-card-header">
+        <div class="role-emoji">${role.emoji}</div>
+        <div>
+          <div class="role-name">${role.title}</div>
+          <span class="role-tag" style="background:${role.tagBg};color:${role.tagColor};border:1px solid ${role.tagColor}40">${role.tag}</span>
+        </div>
+      </div>
+      <div class="role-desc">${role.desc}</div>
+      <div class="role-stats">
+        <div class="role-stat">民意 <span>${s.opinion}</span></div>
+        <div class="role-stat">信任 <span>${s.trust}</span></div>
+        <div class="role-stat">政治存活 <span>${s.political}</span></div>
+      </div>`;
+    grid.appendChild(div);
+  });
+}
+
+function selectRole(roleId) {
+  selectedRoleId = roleId;
+  document.querySelectorAll('.role-card').forEach(el => el.classList.remove('selected'));
+  document.getElementById('role-grid').querySelectorAll('.role-card').forEach((el, i) => {
+    if (Object.keys(ROLES)[i] === roleId) el.classList.add('selected');
+  });
+  document.getElementById('role-confirm-btn').disabled = false;
+}
+
+function confirmRole() {
+  showScreen('screen-site');
+  renderSiteGrid();
+}
+
 function goToSiteSelect() {
   showScreen('screen-site');
   renderSiteGrid();
@@ -590,13 +717,16 @@ function selectSite(siteId) {
 
 function confirmSite() {
   if (!selectedSiteId) return;
+  const role = ROLES[selectedRoleId];
   currentRound = 0;
-  stats = { opinion: 30, trust: 50, political: 60 };
+  stats = { ...role.start };
   strategyCounts = { science: 0, compensate: 0, listen: 0, authority: 0 };
   shuffledSpeakers = shuffle(SPEAKERS_BY_SITE[selectedSiteId]);
   showScreen('screen-hearing');
   const site = SITES.find(s => s.id === selectedSiteId);
   document.getElementById('hearing-location-label').textContent = `📍 公聽會地點：${site.name}`;
+  const badge = document.getElementById('role-badge-inline');
+  if (badge) { badge.textContent = role.emoji + ' ' + role.title; }
   renderHearing();
 }
 
@@ -656,11 +786,11 @@ function chooseResponse(responseId) {
   responsePending = true;
 
   const response = RESPONSES.find(r => r.id === responseId);
-  const speaker = SPEAKERS_BY_SITE[selectedSiteId][currentRound];
+  const speaker = shuffledSpeakers[currentRound];
   strategyCounts[responseId]++;
 
-  // Apply effects (with site-specific modifiers)
-  let { opinion, trust, political } = response.effects;
+  // Apply role-specific effects
+  let { opinion, trust, political } = ROLES[selectedRoleId].effects[responseId];
 
   // Special modifiers for certain site/speaker combos
   if (selectedSiteId === 'island') {
