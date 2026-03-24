@@ -113,6 +113,21 @@
     color: #60a5fa;
     border: 2px solid #60a5fa;
   }
+  .assigned-stance.eco-stance {
+    background: rgba(6,182,212,0.2);
+    color: #22d3ee;
+    border: 2px solid #22d3ee;
+  }
+  .assigned-stance.pragmatic-stance {
+    background: rgba(202,138,4,0.2);
+    color: #fbbf24;
+    border: 2px solid #fbbf24;
+  }
+  .assigned-stance.partisan-stance {
+    background: rgba(168,85,247,0.2);
+    color: #c084fc;
+    border: 2px solid #c084fc;
+  }
   .stance-desc {
     font-size: 0.9rem;
     color: var(--muted);
@@ -211,6 +226,9 @@
   }
   .stance-tag.green { background: rgba(22,163,74,0.2); color: var(--green); }
   .stance-tag.blue { background: rgba(29,78,216,0.2); color: #60a5fa; }
+  .stance-tag.eco { background: rgba(6,182,212,0.2); color: #22d3ee; }
+  .stance-tag.pragmatic { background: rgba(202,138,4,0.2); color: #fbbf24; }
+  .stance-tag.partisan { background: rgba(168,85,247,0.2); color: #c084fc; }
 
   /* ── CHOICES ── */
   .choices { display: flex; flex-direction: column; gap: 10px; }
@@ -627,7 +645,7 @@
 
     <div class="context-box">
       📰 <strong>事件背景</strong>：2025年3月，現任總統宣布將評估重啟核二、核三（打破執政黨長達20年的非核家園政策）。
-      貼文下方，<strong>615則留言</strong>，兩種聲音同時存在。
+      貼文下方，<strong>615則留言</strong>，多種聲音同時存在。
     </div>
 
     <button class="btn btn-primary" id="start-btn" onclick="startGame()">
@@ -1001,27 +1019,79 @@ const ARCHETYPES = {
   }
 };
 
+// ── STANCES ──
+const STANCES = {
+  green: {
+    label: '😔 深綠選民',
+    cssClass: 'green-stance',
+    tagClass: 'green',
+    tagLabel: '深綠選民 😔',
+    tendencyClass: 'green',
+    tendencyLabel: '深綠傾向',
+    blueMode: false,
+    desc: '你曾在街上舉過「我是人，我反核」的牌子。執政黨是你的黨。今天，總統宣布了一件讓你說不出話的事。'
+  },
+  blue: {
+    label: '😏 深藍鄉民',
+    cssClass: 'blue-stance',
+    tagClass: 'blue',
+    tagLabel: '深藍鄉民 😏',
+    tendencyClass: 'blue',
+    tendencyLabel: '深藍傾向',
+    blueMode: true,
+    desc: '你等這一天等很久了。那些嘲笑你「反科學」的人，今天臉怎麼了？你已經準備好打開截圖資料夾了。'
+  },
+  eco: {
+    label: '😤 環保戰士',
+    cssClass: 'eco-stance',
+    tagClass: 'eco',
+    tagLabel: '環保戰士 😤',
+    tendencyClass: 'green',
+    tendencyLabel: '反核傾向',
+    blueMode: false,
+    desc: '你反核不是為了政黨，是因為核廢料根本沒有妥善的去處。你看過貯存場的報告，你清楚最終處置是什麼意思。今天的新聞讓你覺得從來沒有人認真解決問題，只是一直推遲。'
+  },
+  pragmatic: {
+    label: '🧾 電費焦慮族',
+    cssClass: 'pragmatic-stance',
+    tagClass: 'pragmatic',
+    tagLabel: '電費焦慮族 🧾',
+    tendencyClass: 'neutral',
+    tendencyLabel: '務實中立',
+    blueMode: false,
+    desc: '上個月電費又漲了。你不在乎藍綠，你只想知道重啟核電能不能讓帳單少一點。政治口水讓你很煩，但電費通知讓你更煩。你只是一個普通人，想要一個正常的答案。'
+  },
+  partisan: {
+    label: '📢 在野側翼',
+    cssClass: 'partisan-stance',
+    tagClass: 'partisan',
+    tagLabel: '在野側翼 📢',
+    tendencyClass: 'blue',
+    tendencyLabel: '在野傾向',
+    blueMode: true,
+    desc: '你不一定每個核電細節都搞得清楚，但你知道執政黨說什麼你第一個要質疑。今天的新聞讓你有點困惑——反核一直是進步立場，但現在是誰在反誰？'
+  }
+};
+
 // ── INIT ──
 function assignStance() {
-  const rand = Math.random();
-  assignedStance = rand < 0.5 ? 'green' : 'blue';
+  const keys = Object.keys(STANCES);
+  assignedStance = keys[Math.floor(Math.random() * keys.length)];
+  const s = STANCES[assignedStance];
 
   const display = document.getElementById('stance-display');
   const desc = document.getElementById('stance-description');
   const startBtn = document.getElementById('start-btn');
 
   display.classList.remove('loading');
+  display.textContent = s.label;
+  display.className = `assigned-stance ${s.cssClass}`;
+  desc.textContent = s.desc;
 
-  if (assignedStance === 'green') {
-    display.textContent = '😔 深綠選民';
-    display.className = 'assigned-stance green-stance';
-    desc.textContent = '你曾經在街上舉過「我是人，我反核」的牌子。執政黨是你的黨。今天，總統宣布了一件讓你說不出話的事。';
-    startBtn.classList.remove('blue-mode');
-  } else {
-    display.textContent = '😏 深藍鄉民';
-    display.className = 'assigned-stance blue-stance';
-    desc.textContent = '你等這一天等很久了。那些嘲笑你「反科學」的人，今天臉怎麼了？你已經準備好打開截圖資料夾了。';
+  if (s.blueMode) {
     startBtn.classList.add('blue-mode');
+  } else {
+    startBtn.classList.remove('blue-mode');
   }
 }
 
@@ -1044,13 +1114,9 @@ function loadRound() {
   document.getElementById('q-text').textContent = q.text;
 
   const stanceTag = document.getElementById('q-stance-tag');
-  if (assignedStance === 'green') {
-    stanceTag.textContent = '深綠選民 😔';
-    stanceTag.className = 'stance-tag green';
-  } else {
-    stanceTag.textContent = '深藍鄉民 😏';
-    stanceTag.className = 'stance-tag blue';
-  }
+  const s = STANCES[assignedStance];
+  stanceTag.textContent = s.tagLabel;
+  stanceTag.className = `stance-tag ${s.tagClass}`;
 
   const container = document.getElementById('choices-container');
   container.innerHTML = '';
@@ -1146,23 +1212,23 @@ function showResult() {
   document.getElementById('archetype-card').className = `archetype-card ${a.type}`;
 
   // Twist: compare assigned vs actual
-  const assignedLabel = assignedStance === 'green' ? '深綠選民' : '深藍鄉民';
-  const assignedClass = assignedStance === 'green' ? 'green' : 'blue';
+  const sd = STANCES[assignedStance];
+  const assignedLabel = sd.label.replace(/^\S+\s/, '');  // strip emoji
+  const assignedClass = sd.tagClass;
 
   let actualTendency = naturalTendency || 'neutral';
   let actualLabel, actualClass;
-  if (actualTendency === 'green') { actualLabel = '深綠傾向'; actualClass = 'green'; }
-  else if (actualTendency === 'blue') { actualLabel = '深藍傾向'; actualClass = 'blue'; }
-  else { actualLabel = '中間傾向'; actualClass = 'neutral'; }
+  if (actualTendency === 'green') { actualLabel = '反核傾向'; actualClass = 'green'; }
+  else if (actualTendency === 'blue') { actualLabel = '擁核傾向'; actualClass = 'blue'; }
+  else { actualLabel = '中立務實'; actualClass = 'neutral'; }
 
-  document.getElementById('twist-assigned').textContent = assignedLabel;
+  document.getElementById('twist-assigned').textContent = sd.label;
   document.getElementById('twist-assigned').className = `value ${assignedClass}`;
   document.getElementById('twist-actual').textContent = actualLabel;
   document.getElementById('twist-actual').className = `value ${actualClass}`;
 
   const verdict = document.getElementById('twist-verdict');
-  const match = (assignedStance === 'green' && actualTendency === 'green') ||
-                (assignedStance === 'blue' && actualTendency === 'blue');
+  const match = sd.tendencyClass === actualTendency;
   if (match) {
     verdict.textContent = `✅ 你的選擇和被分配的立場一致。你的人設是真實的——還是說，你在被分配的角色裡找到了認同？`;
     verdict.className = 'twist-verdict match';
