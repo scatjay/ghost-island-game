@@ -6,8 +6,8 @@
 <title>您有615則留言｜鬼島核電篇 EP.2</title>
 <meta property="og:title" content="您有615則留言｜你會怎麼管理這場留言戰？">
 <meta property="og:description" content="扮演貼文作者，615則留言正在炸鍋。你要隱藏哪些？回哪些？每個決定都在塑造你的同溫層厚度。">
-<meta property="og:image" content="https://scatjay.github.io/ghost-island-game/nuke-or-n../ep2-k9r/cover.png">
-<meta property="og:url" content="https://scatjay.github.io/ghost-island-game/nuke-or-n../ep2-k9r/">
+<meta property="og:image" content="https://scatjay.github.io/ghost-island-game/nuke-or-not/ep2-k9r/cover.png">
+<meta property="og:url" content="https://scatjay.github.io/ghost-island-game/nuke-or-not/ep2-k9r/">
 <meta name="twitter:card" content="summary_large_image">
 <style>
   :root {
@@ -670,7 +670,7 @@
     </div>
 
     <div class="share-section">
-      <h4>曬出你的管理風格</h4>
+      <h4>你管出了什麼</h4>
       <div class="share-text" id="share-text"></div>
       <div class="share-buttons">
         <button class="share-btn copy" onclick="copyShare()">複製文字</button>
@@ -913,10 +913,17 @@ function showResult() {
     });
   }, 300);
 
-  const gameUrl = 'https://scatjay.github.io/ghost-island-game/nuke-or-n../ep2-k9r/';
-  const styleLabel = echo >= 70 ? '同溫層守護者' : echo >= 40 ? '半開放管理者' : '開放公廣場型';
+  const gameUrl = 'https://scatjay.github.io/ghost-island-game/nuke-or-not/ep2-k9r/';
+  let shareQuip;
+  if (echo >= 70) {
+    shareQuip = `管了615則留言，我的同溫層厚度 ${echo}%。\n批評的聲音都隱藏了。支持者很安心，我也很安心。\n這不是我的問題——島上每個貼文作者都在做一樣的事。\n你也會嗎？`;
+  } else if (echo >= 40) {
+    shareQuip = `615則留言，同溫層厚度 ${echo}%。\n我保留了一些批評，也隱藏了一些，說實話我也搞不清楚自己在保護誰。\n這大概就是「普通人」管留言的方式。`;
+  } else {
+    shareQuip = `管了615則留言，同溫層只有 ${echo}%——我把不舒服的聲音都留下來了。\n貼文壓力 ${meters.stress} 分。對話品質 ${meters.dialogue} 分。\n這不是什麼美德，叫做自找麻煩。`;
+  }
   document.getElementById('share-text').textContent =
-    `我在《您有615則留言》管出了「${styleLabel}」風格。\n同溫層厚度 ${echo}%，對話品質 ${meters.dialogue}分。\n\n你會怎麼管理那 615 則留言？→ ${gameUrl}\n\n#鬼島鄉民測驗 #核電篇`;
+    `${shareQuip}\n\n→ ${gameUrl}\n#鬼島鄉民測驗 #核電篇`;
 
   showScreen('screen-result');
 }
@@ -930,11 +937,11 @@ function copyShare() {
   });
 }
 function shareFB() {
-  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://scatjay.github.io/ghost-island-game/nuke-or-n../ep2-k9r/')}`, '_blank');
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://scatjay.github.io/ghost-island-game/nuke-or-not/ep2-k9r/')}`, '_blank');
 }
 function shareLINE() {
   const text = encodeURIComponent(document.getElementById('share-text').textContent);
-  window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent('https://scatjay.github.io/ghost-island-game/nuke-or-n../ep2-k9r/')}&text=${text}`, '_blank');
+  window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent('https://scatjay.github.io/ghost-island-game/nuke-or-not/ep2-k9r/')}&text=${text}`, '_blank');
 }
 function retry() {
   currentRound = 0;
