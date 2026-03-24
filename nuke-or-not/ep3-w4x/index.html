@@ -6,8 +6,8 @@
 <title>核廢料放你家｜鬼島核電篇 EP.3</title>
 <meta property="og:title" content="核廢料放你家｜你敢開公聽會嗎？">
 <meta property="og:description" content="你是能源部長，必須選一個地點召開公聽會。五個聲音，四種應對策略。沒有完美解。">
-<meta property="og:image" content="https://scatjay.github.io/ghost-island-game/nuke-or-n../ep3-w4x/cover.png">
-<meta property="og:url" content="https://scatjay.github.io/ghost-island-game/nuke-or-n../ep3-w4x/">
+<meta property="og:image" content="https://scatjay.github.io/ghost-island-game/nuke-or-not/ep3-w4x/cover.png">
+<meta property="og:url" content="https://scatjay.github.io/ghost-island-game/nuke-or-not/ep3-w4x/">
 <meta name="twitter:card" content="summary_large_image">
 <style>
   :root {
@@ -211,8 +211,7 @@
 
   <!-- ═══ INTRO ═══ -->
   <div id="screen-intro" class="screen active">
-    <div class="series-badge">🏝️ 鬼島鄉民測驗 · 核電篇</div>
-    <div class="ep-label">EP.3</div>
+    <div class="series-badge">鬼島鄉民測驗 · 核電篇 EP.3</div>
     <h1 class="game-title">核廢料<br>放你家？</h1>
     <p class="game-subtitle">你是能源部長。你必須開公聽會。</p>
 
@@ -236,7 +235,7 @@
 
   <!-- ═══ SITE SELECT ═══ -->
   <div id="screen-site" class="screen">
-    <div class="series-badge">🏝️ 核電篇 EP.3 — 選定地點</div>
+    <div class="series-badge">鬼島鄉民測驗 · 核電篇 EP.3</div>
     <div class="phase-title">你要在哪裡召開公聽會？</div>
     <p class="phase-sub">選定地點後，當地居民代表將依序發言。你的選擇將決定你面對的是哪些聲音。</p>
 
@@ -253,7 +252,7 @@
 
   <!-- ═══ HEARING ═══ -->
   <div id="screen-hearing" class="screen">
-    <div class="series-badge">🏝️ 核電篇 EP.3 — 公聽會進行中</div>
+    <div class="series-badge">鬼島鄉民測驗 · 核電篇 EP.3</div>
 
     <div class="hearing-header">
       <div class="hearing-location" id="hearing-location-label">📍 地點：</div>
@@ -294,7 +293,7 @@
 
   <!-- ═══ RESULT ═══ -->
   <div id="screen-result" class="screen">
-    <div class="series-badge">🏝️ 核電篇 EP.3 — 公聽會結束</div>
+    <div class="series-badge">鬼島鄉民測驗 · 核電篇 EP.3</div>
     <div id="result-content"></div>
     <div class="game-footer">
       府城數位人文實驗室<br>
@@ -829,15 +828,15 @@ function showScreen(id) {
   window.scrollTo(0, 0);
 }
 function shareFB() {
-  const url = 'https://scatjay.github.io/ghost-island-game/nuke-or-n../ep3-w4x/';
+  const url = 'https://scatjay.github.io/ghost-island-game/nuke-or-not/ep3-w4x/';
   window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url), '_blank');
 }
 function shareLINE() {
-  const text = window._shareText + '\nhttps://scatjay.github.io/ghost-island-game/nuke-or-n../ep3-w4x/';
+  const text = window._shareText + '\nhttps://scatjay.github.io/ghost-island-game/nuke-or-not/ep3-w4x/';
   window.open('https://line.me/R/msg/text/?' + encodeURIComponent(text), '_blank');
 }
 function copyResult(event) {
-  const text = window._shareText + '\nhttps://scatjay.github.io/ghost-island-game/nuke-or-n../ep3-w4x/';
+  const text = window._shareText + '\nhttps://scatjay.github.io/ghost-island-game/nuke-or-not/ep3-w4x/';
   navigator.clipboard.writeText(text).catch(() => {});
   event.target.textContent = '✓ 已複製';
   setTimeout(() => { event.target.textContent = '複製結果'; }, 2000);
