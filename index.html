@@ -68,7 +68,9 @@
     transition: all 0.15s; position: relative;
   }
   .ep-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
-  .ep-card.coming-soon { cursor: default; pointer-events: none; opacity: 0.45; }
+  .ep-card.active { border-color: rgba(34,197,94,0.5); box-shadow: 0 0 0 1px rgba(34,197,94,0.2), 0 4px 20px rgba(34,197,94,0.12); }
+  .ep-card.active:hover { border-color: var(--green); box-shadow: 0 0 0 1px rgba(34,197,94,0.4), 0 8px 28px rgba(34,197,94,0.2); }
+  .ep-card.coming-soon { cursor: default; pointer-events: none; opacity: 0.28; filter: grayscale(0.7) brightness(0.6); border-style: dashed; border-color: #2a3a4a; }
   .ep-accent-bar { width: 5px; flex-shrink: 0; }
   .ep-accent-bar.green { background: var(--green); }
   .ep-accent-bar.orange { background: var(--yellow); }
@@ -135,7 +137,7 @@
     </div>
 
     <div class="ep-grid">
-      <a class="ep-card" href="nuke-or-not/ep1/">
+      <a class="ep-card active" href="nuke-or-not/ep1/">
         <div class="ep-accent-bar green"></div>
         <div class="ep-body">
           <div class="ep-num">EP.1</div>
@@ -146,27 +148,25 @@
         <div class="ep-arrow">›</div>
       </a>
 
-      <a class="ep-card" href="nuke-or-not/ep2-k9r/">
-        <div class="ep-accent-bar orange"></div>
+      <div class="ep-card coming-soon">
+        <div class="ep-accent-bar locked"></div>
         <div class="ep-body">
           <div class="ep-num">EP.2</div>
           <div class="ep-name">您有 615 則留言</div>
           <div class="ep-desc">扮演貼文作者，面對 6 則真實留言情境。你的每一個「隱藏」都在塑造自己的同溫層。</div>
-          <span class="ep-tag live">▶ 現在遊玩</span>
+          <span class="ep-tag soon">🔒 敬請期待</span>
         </div>
-        <div class="ep-arrow">›</div>
-      </a>
+      </div>
 
-      <a class="ep-card" href="nuke-or-not/ep3-w4x/">
-        <div class="ep-accent-bar teal"></div>
+      <div class="ep-card coming-soon">
+        <div class="ep-accent-bar locked"></div>
         <div class="ep-body">
           <div class="ep-num">EP.3</div>
           <div class="ep-name">核廢料放你家？</div>
           <div class="ep-desc">你是能源部長，選址後召開公聽會，五個聲音依序質詢你。沒有人滿意。問題是你能讓幾個人點頭。</div>
-          <span class="ep-tag live">▶ 現在遊玩</span>
+          <span class="ep-tag soon">🔒 敬請期待</span>
         </div>
-        <div class="ep-arrow">›</div>
-      </a>
+      </div>
     </div>
 
 
