@@ -40,45 +40,52 @@
   }
   /* ── HERO ISLAND SCENE ── */
   .hero-scene {
-    display: block; position: relative; margin: 0 auto 12px;
-    width: 120px; height: 88px;
+    display: block; position: relative;
+    width: 140px; height: 90px;
+    margin: 0 auto 14px;
   }
-  /* 椰子樹 */
+  /* 椰子樹：以 transform-origin bottom center 搖晃，不用 translateX */
   .hero-tree {
-    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-    font-size: 3.4rem; line-height: 1;
-    animation: treeSway 5s ease-in-out infinite;
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    text-align: center;
+    font-size: 3.6rem; line-height: 1;
     transform-origin: bottom center;
+    animation: treeSway 5s ease-in-out infinite;
   }
   @keyframes treeSway {
-    0%,100%{ transform: translateX(-50%) rotate(0deg); }
-    25%    { transform: translateX(-50%) rotate(3deg); }
-    75%    { transform: translateX(-50%) rotate(-2.5deg); }
+    0%,100% { transform: rotate(0deg); }
+    20%     { transform: rotate(3.5deg); }
+    60%     { transform: rotate(-3deg); }
+    80%     { transform: rotate(1.5deg); }
   }
-  /* 掉落的葉子 */
+  /* 葉子從樹頂飄落旋轉 */
   .hero-leaf {
-    position: absolute; top: 8px; left: 50%; margin-left: 8px;
-    font-size: 1.1rem; opacity: 0;
-    animation: leafFall 4.5s ease-in 1.2s infinite;
-    transform-origin: top left;
+    position: absolute;
+    top: 2px; left: 50%; margin-left: 12px;
+    font-size: 1rem; opacity: 0;
+    animation: leafFall 5s ease-in 1.8s infinite;
   }
   @keyframes leafFall {
-    0%  { opacity:0; transform: translate(0,0) rotate(0deg); }
-    8%  { opacity:1; }
-    80% { opacity:0.7; transform: translate(28px, 52px) rotate(180deg); }
-    100%{ opacity:0; transform: translate(34px, 60px) rotate(200deg); }
+    0%   { opacity: 0;   transform: translate(0, 0)      rotate(-10deg); }
+    6%   { opacity: 1;   transform: translate(2px, 4px)  rotate(20deg); }
+    50%  { opacity: 0.9; transform: translate(18px, 30px) rotate(110deg); }
+    85%  { opacity: 0.5; transform: translate(26px, 55px) rotate(200deg); }
+    100% { opacity: 0;   transform: translate(28px, 64px) rotate(220deg); }
   }
-  /* 鯨魚 */
+  /* 鯨魚在樹下左右移動 */
   .hero-whale {
-    position: absolute; bottom: 0; left: 50%; margin-left: -68px;
-    font-size: 1.6rem; line-height: 1;
-    animation: whaleFloat 6s ease-in-out 0.8s infinite;
+    position: absolute;
+    bottom: 2px; left: 6px;
+    font-size: 1.5rem; line-height: 1;
+    animation: whaleSwim 7s ease-in-out 0.5s infinite;
   }
-  @keyframes whaleFloat {
-    0%,100%{ transform: translateY(0) scaleX(1); }
-    40%    { transform: translateY(-6px) scaleX(1); }
-    50%    { transform: translateY(-6px) scaleX(-1); }
-    90%    { transform: translateY(0) scaleX(-1); }
+  @keyframes whaleSwim {
+    0%   { transform: translateX(0)     translateY(0); }
+    30%  { transform: translateX(12px)  translateY(-4px); }
+    50%  { transform: translateX(16px)  translateY(0); }
+    70%  { transform: translateX(8px)   translateY(-3px); }
+    100% { transform: translateX(0)     translateY(0); }
   }
   .hero-badge {
     display: inline-block; background: var(--border); color: var(--muted);
