@@ -2393,8 +2393,8 @@ function shareFB() {
 }
 
 function shareLINE() {
-  const text = encodeURIComponent(document.getElementById('share-text').textContent);
-  window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent('https://scatjay.github.io/ghost-island-game/nuke-or-not/ep1/')}&text=${text}`, '_blank');
+  const msg = document.getElementById('share-text').textContent;
+  window.open(`https://line.me/R/msg/text/?${encodeURIComponent(msg)}`, '_blank');
 }
 
 function retry() {

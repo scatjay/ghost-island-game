@@ -1247,8 +1247,8 @@ function shareFB() {
   window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://scatjay.github.io/ghost-island-game/nuke-or-not/ep2-k9r/')}`, '_blank');
 }
 function shareLINE() {
-  const text = encodeURIComponent(document.getElementById('share-text').textContent);
-  window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent('https://scatjay.github.io/ghost-island-game/nuke-or-not/ep2-k9r/')}&text=${text}`, '_blank');
+  const msg = document.getElementById('share-text').textContent;
+  window.open(`https://line.me/R/msg/text/?${encodeURIComponent(msg)}`, '_blank');
 }
 function retry() {
   currentRound = 0;
