@@ -3,17 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>鬼島鄉民測驗：你是哪種台灣網民？</title>
+<title>鬼島鄉民測驗｜府城數位人文實驗室</title>
+<meta property="og:title" content="鬼島鄉民測驗｜你是哪種鬼島網民？">
+<meta property="og:description" content="府城數位人文實驗室 × OASIS 社群模擬計畫。用遊戲揭示島上最真實的輿論生態。">
+<meta property="og:image" content="https://scatjay.github.io/ghost-island-game/cover.png">
+<meta property="og:url" content="https://scatjay.github.io/ghost-island-game/">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root {
-    --bg: #0d0d1a;
-    --panel: #1a1a2e;
+    --bg: #020617;
+    --bg2: #0f172a;
+    --card: #1e293b;
+    --border: #334155;
     --accent: #e94560;
     --gold: #f5a623;
     --teal: #16c79a;
-    --text: #eee8d5;
-    --muted: #93a1a1;
-    --border: rgba(233,69,96,0.3);
+    --yellow: #d97706;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --green: #22c55e;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -21,505 +29,183 @@
     color: var(--text);
     font-family: 'Noto Sans TC', '微軟正黑體', sans-serif;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
   }
 
-  /* ===== SPLASH ===== */
-  #splash {
-    max-width: 480px;
-    width: 100%;
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 20px 36px;
     text-align: center;
-    padding: 40px 20px;
   }
-  .island-emoji { font-size: 72px; display: block; margin-bottom: 12px; animation: float 3s ease-in-out infinite; }
-  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-  #splash h1 { font-size: 2rem; color: var(--accent); line-height: 1.2; margin-bottom: 8px; }
-  #splash .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 32px; }
-  .stat-row { display: flex; justify-content: center; gap: 24px; margin-bottom: 32px; }
-  .stat { text-align: center; }
-  .stat .num { font-size: 1.6rem; font-weight: bold; color: var(--gold); }
-  .stat .label { font-size: 0.75rem; color: var(--muted); }
-  .btn-start {
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 50px;
-    padding: 16px 48px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
-    box-shadow: 0 0 24px rgba(233,69,96,0.4);
+  .hero-island { font-size: 4rem; display: block; margin-bottom: 12px; animation: float 4s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  .hero-badge {
+    display: inline-block; background: var(--border); color: var(--muted);
+    font-size: 0.72rem; padding: 3px 12px; border-radius: 20px; margin-bottom: 14px;
   }
-  .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 36px rgba(233,69,96,0.6); }
+  .hero-title { font-size: 2.2rem; font-weight: 900; line-height: 1.2; margin-bottom: 10px; }
+  .hero-title span { color: var(--accent); }
+  .hero-sub { font-size: 0.95rem; color: var(--muted); max-width: 400px; margin: 0 auto 24px; line-height: 1.7; }
+  .hero-stats { display: flex; justify-content: center; gap: 28px; }
+  .stat-item { text-align: center; }
+  .stat-item .num { font-size: 1.4rem; font-weight: 800; color: var(--gold); display: block; }
+  .stat-item .lbl { font-size: 0.7rem; color: var(--muted); }
 
-  /* ===== GAME ===== */
-  #game { display: none; max-width: 560px; width: 100%; }
+  /* ── CONTENT ── */
+  .content { max-width: 680px; margin: 0 auto; padding: 32px 20px 48px; }
 
-  /* Progress */
-  .progress-bar-wrap { background: var(--panel); border-radius: 8px; height: 6px; margin-bottom: 24px; overflow: hidden; }
-  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); transition: width 0.4s; }
+  /* Series label */
+  .series-header { margin-bottom: 20px; }
+  .series-label { font-size: 0.72rem; font-weight: 700; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .series-title { font-size: 1.2rem; font-weight: 800; }
+  .series-desc { font-size: 0.85rem; color: var(--muted); margin-top: 4px; line-height: 1.6; }
 
-  /* Stats bar */
-  .stats-bar {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-bottom: 24px;
+  /* EP cards */
+  .ep-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 36px; }
+  .ep-card {
+    display: flex; align-items: stretch;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+    text-decoration: none; color: var(--text);
+    transition: all 0.15s; position: relative;
   }
-  .stat-chip {
-    background: var(--panel);
-    border-radius: 8px;
-    padding: 8px 6px;
-    text-align: center;
-    border: 1px solid transparent;
-    transition: border-color 0.3s;
+  .ep-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .ep-card.coming-soon { cursor: default; pointer-events: none; opacity: 0.45; }
+  .ep-accent-bar { width: 5px; flex-shrink: 0; }
+  .ep-accent-bar.green { background: var(--green); }
+  .ep-accent-bar.orange { background: var(--yellow); }
+  .ep-accent-bar.teal { background: var(--teal); }
+  .ep-accent-bar.locked { background: var(--border); }
+  .ep-body { padding: 16px 18px; flex: 1; }
+  .ep-num {
+    font-size: 0.7rem; font-weight: 700;
+    color: var(--muted); letter-spacing: 0.06em; margin-bottom: 4px;
   }
-  .stat-chip.active { border-color: var(--gold); }
-  .stat-chip .s-icon { font-size: 1.2rem; display: block; }
-  .stat-chip .s-label { font-size: 0.65rem; color: var(--muted); display: block; }
-  .stat-chip .s-val { font-size: 1rem; font-weight: bold; color: var(--gold); display: block; }
+  .ep-name { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; }
+  .ep-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+  .ep-tag {
+    display: inline-block; font-size: 0.68rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px; margin-top: 8px;
+  }
+  .ep-tag.live { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  .ep-tag.soon { background: rgba(148,163,184,0.1); color: var(--muted); border: 1px solid var(--border); font-style: italic; }
+  .ep-arrow { display: flex; align-items: center; padding: 16px 14px; color: var(--muted); font-size: 1.1rem; }
+  .ep-card:hover .ep-arrow { color: var(--text); }
 
-  /* Card */
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px 24px;
-    margin-bottom: 20px;
-  }
-  .round-label { font-size: 0.75rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-  .scenario {
-    font-size: 1.05rem;
-    line-height: 1.7;
-    margin-bottom: 8px;
-  }
-  .post-bubble {
-    background: rgba(233,69,96,0.08);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 8px 8px 0;
-    padding: 12px 16px;
-    font-size: 0.95rem;
-    color: var(--gold);
-    margin: 16px 0;
-    line-height: 1.6;
-  }
+  /* Divider */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
 
-  /* Options */
-  .options { display: flex; flex-direction: column; gap: 10px; }
-  .opt-btn {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 14px 18px;
-    text-align: left;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: var(--text);
-    font-size: 0.95rem;
-    line-height: 1.5;
+  /* Other series */
+  .other-series-card {
+    display: flex; align-items: stretch;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+    text-decoration: none; color: var(--text);
+    transition: all 0.15s;
   }
-  .opt-btn:hover { background: rgba(233,69,96,0.12); border-color: var(--accent); transform: translateX(4px); }
-  .opt-btn .opt-tag { font-size: 0.7rem; color: var(--muted); display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .opt-btn .opt-text { display: block; }
+  .other-series-card:hover { border-color: var(--gold); transform: translateY(-2px); }
 
-  /* Result */
-  #result { display: none; max-width: 480px; width: 100%; }
-  .result-card {
-    background: var(--panel);
-    border: 2px solid var(--gold);
-    border-radius: 20px;
-    padding: 36px 28px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
+  /* Footer */
+  .site-footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 20px; text-align: center;
+    font-size: 0.75rem; color: var(--muted); line-height: 1.8;
   }
-  .result-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(245,166,35,0.08) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .archetype-icon { font-size: 80px; display: block; margin-bottom: 16px; }
-  .archetype-title { font-size: 0.85rem; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
-  .archetype-name { font-size: 2rem; font-weight: bold; color: var(--accent); margin-bottom: 16px; }
-  .archetype-desc { color: var(--muted); font-size: 0.95rem; line-height: 1.7; margin-bottom: 24px; }
-  .archetype-quote {
-    background: rgba(233,69,96,0.08);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-    font-size: 0.9rem;
-    font-style: italic;
-    color: var(--text);
-    margin-bottom: 24px;
-  }
-  .sim-note {
-    font-size: 0.8rem;
-    color: var(--teal);
-    margin-bottom: 24px;
-  }
-
-  /* Stat breakdown */
-  .stat-breakdown { margin-bottom: 28px; }
-  .stat-breakdown-title { font-size: 0.8rem; color: var(--muted); margin-bottom: 12px; text-align: left; }
-  .stat-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .stat-bar-label { font-size: 0.8rem; width: 50px; text-align: right; color: var(--muted); }
-  .stat-bar-track { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
-  .stat-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease-out; }
-  .rage-bar { background: var(--accent); }
-  .reason-bar { background: var(--teal); }
-  .influence-bar { background: var(--gold); }
-  .cred-bar { background: #7c9fff; }
-  .stat-bar-num { font-size: 0.8rem; width: 28px; color: var(--text); }
-
-  /* Share */
-  .share-area { display: flex; flex-direction: column; gap: 10px; }
-  .share-text {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px;
-    padding: 14px;
-    font-size: 0.85rem;
-    color: var(--muted);
-    line-height: 1.6;
-    text-align: left;
-  }
-  .btn-copy {
-    background: var(--teal);
-    color: #0d0d1a;
-    border: none;
-    border-radius: 50px;
-    padding: 12px 32px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: opacity 0.2s;
-  }
-  .btn-copy:hover { opacity: 0.85; }
-  .btn-retry {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 50px;
-    padding: 10px 28px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: border-color 0.2s;
-  }
-  .btn-retry:hover { border-color: var(--accent); color: var(--text); }
+  .site-footer a { color: var(--muted); text-decoration: none; }
+  .site-footer a:hover { color: var(--text); }
 </style>
 </head>
 <body>
 
-<!-- SPLASH -->
-<div id="splash">
-  <span class="island-emoji">🏝️</span>
-  <h1>鬼島鄉民測驗</h1>
-  <p class="subtitle">當台灣的教育危機碰上 AI 浪潮<br>你是哪種社群上的人？</p>
-  <div class="stat-row">
-    <div class="stat"><div class="num">6</div><div class="label">鄉民原型</div></div>
-    <div class="stat"><div class="num">5</div><div class="label">關劇情</div></div>
-    <div class="stat"><div class="num">3分</div><div class="label">鐘完成</div></div>
-  </div>
-  <button class="btn-start" onclick="startGame()">開始測驗 →</button>
-</div>
-
-<!-- GAME -->
-<div id="game">
-  <div class="progress-bar-wrap">
-    <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
-  </div>
-  <div class="stats-bar">
-    <div class="stat-chip" id="chip-rage">
-      <span class="s-icon">🔥</span>
-      <span class="s-label">怒氣</span>
-      <span class="s-val" id="val-rage">0</span>
-    </div>
-    <div class="stat-chip" id="chip-reason">
-      <span class="s-icon">📊</span>
-      <span class="s-label">理性</span>
-      <span class="s-val" id="val-reason">0</span>
-    </div>
-    <div class="stat-chip" id="chip-influence">
-      <span class="s-icon">📢</span>
-      <span class="s-label">影響力</span>
-      <span class="s-val" id="val-influence">0</span>
-    </div>
-    <div class="stat-chip" id="chip-cred">
-      <span class="s-icon">🤔</span>
-      <span class="s-label">公信力</span>
-      <span class="s-val" id="val-cred">0</span>
+  <!-- HERO -->
+  <div class="hero">
+    <span class="hero-island">🏝️</span>
+    <div class="hero-badge">府城數位人文實驗室 × OASIS 社群模擬計畫</div>
+    <h1 class="hero-title">鬼島<span>鄉民</span>測驗</h1>
+    <p class="hero-sub">島上最吵的議題，換個角度體驗。<br>不是要你選邊站，是讓你看見自己怎麼站。</p>
+    <div class="hero-stats">
+      <div class="stat-item"><span class="num">3</span><span class="lbl">系列遊戲</span></div>
+      <div class="stat-item"><span class="num">3</span><span class="lbl">遊戲機制類型</span></div>
+      <div class="stat-item"><span class="num">615+</span><span class="lbl">真實留言樣本</span></div>
     </div>
   </div>
-  <div class="card" id="questionCard"></div>
-</div>
 
-<!-- RESULT -->
-<div id="result">
-  <div class="result-card">
-    <span class="archetype-icon" id="resultIcon"></span>
-    <div class="archetype-title">你的鬼島原型</div>
-    <div class="archetype-name" id="resultName"></div>
-    <div class="archetype-desc" id="resultDesc"></div>
-    <div class="archetype-quote" id="resultQuote"></div>
-    <div class="sim-note" id="simNote"></div>
+  <!-- CONTENT -->
+  <div class="content">
 
-    <div class="stat-breakdown">
-      <div class="stat-breakdown-title">你的屬性分佈</div>
-      <div class="stat-bar-row">
-        <div class="stat-bar-label">怒氣</div>
-        <div class="stat-bar-track"><div class="stat-bar-fill rage-bar" id="bar-rage" style="width:0%"></div></div>
-        <div class="stat-bar-num" id="bval-rage">0</div>
-      </div>
-      <div class="stat-bar-row">
-        <div class="stat-bar-label">理性</div>
-        <div class="stat-bar-track"><div class="stat-bar-fill reason-bar" id="bar-reason" style="width:0%"></div></div>
-        <div class="stat-bar-num" id="bval-reason">0</div>
-      </div>
-      <div class="stat-bar-row">
-        <div class="stat-bar-label">影響力</div>
-        <div class="stat-bar-track"><div class="stat-bar-fill influence-bar" id="bar-influence" style="width:0%"></div></div>
-        <div class="stat-bar-num" id="bval-influence">0</div>
-      </div>
-      <div class="stat-bar-row">
-        <div class="stat-bar-label">公信力</div>
-        <div class="stat-bar-track"><div class="stat-bar-fill cred-bar" id="bar-cred" style="width:0%"></div></div>
-        <div class="stat-bar-num" id="bval-cred">0</div>
-      </div>
+    <!-- 核電篇系列 -->
+    <div class="series-header">
+      <div class="series-label">🔆 第一系列</div>
+      <div class="series-title">核電存廢篇</div>
+      <div class="series-desc">總統宣布重啟核電，615則留言炸鍋。三款遊戲，三種切入角度。</div>
     </div>
 
-    <div class="share-area">
-      <div class="share-text" id="shareText"></div>
-      <button class="btn-copy" onclick="copyShare()">📋 複製分享文案</button>
-      <button class="btn-retry" onclick="retry()">🔄 重新測驗</button>
+    <div class="ep-grid">
+      <a class="ep-card" href="nuke-or-not/ep1/">
+        <div class="ep-accent-bar green"></div>
+        <div class="ep-body">
+          <div class="ep-num">EP.1</div>
+          <div class="ep-name">臉腫了嗎？</div>
+          <div class="ep-desc">系統隨機分配你的政治立場，5 道情境題後揭示：你的天然傾向和你的「人設」一樣嗎？</div>
+          <span class="ep-tag live">▶ 現在遊玩</span>
+        </div>
+        <div class="ep-arrow">›</div>
+      </a>
+
+      <a class="ep-card" href="nuke-or-not/ep2/">
+        <div class="ep-accent-bar orange"></div>
+        <div class="ep-body">
+          <div class="ep-num">EP.2</div>
+          <div class="ep-name">您有 615 則留言</div>
+          <div class="ep-desc">扮演貼文作者，面對 6 則真實留言情境。你的每一個「隱藏」都在塑造自己的同溫層。</div>
+          <span class="ep-tag live">▶ 現在遊玩</span>
+        </div>
+        <div class="ep-arrow">›</div>
+      </a>
+
+      <a class="ep-card" href="nuke-or-not/ep3/">
+        <div class="ep-accent-bar teal"></div>
+        <div class="ep-body">
+          <div class="ep-num">EP.3</div>
+          <div class="ep-name">核廢料放你家？</div>
+          <div class="ep-desc">你是能源部長，選址後召開公聽會，五個聲音依序質詢你。沒有人滿意。問題是你能讓幾個人點頭。</div>
+          <span class="ep-tag live">▶ 現在遊玩</span>
+        </div>
+        <div class="ep-arrow">›</div>
+      </a>
     </div>
+
+    <hr class="divider">
+
+    <!-- 教育AI篇 -->
+    <div class="series-header">
+      <div class="series-label">🤖 其他系列</div>
+      <div class="series-title">教育 AI 篇</div>
+      <div class="series-desc">AI 進校園，你站在哪一邊？</div>
+    </div>
+
+    <div class="ep-grid">
+      <a class="ep-card" href="education-ai/">
+        <div class="ep-accent-bar" style="background:#a855f7"></div>
+        <div class="ep-body">
+          <div class="ep-num">STANDALONE</div>
+          <div class="ep-name">你是哪種 AI 教育鄉民？</div>
+          <div class="ep-desc">教師、家長、學生、學者——面對 AI 進教室，每個人都有自己的焦慮和算計。</div>
+          <span class="ep-tag live">▶ 現在遊玩</span>
+        </div>
+        <div class="ep-arrow">›</div>
+      </a>
+    </div>
+
   </div>
-</div>
 
-<script>
-const QUESTIONS = [
-  {
-    round: "第 1 關：演算法推了一則貼文",
-    scenario: "你正在滑 Facebook，演算法推給你一則貼文：",
-    post: "「今年又有 3 所大學宣布停招科系。台灣高教在崩潰。我教了 20 年書，第一次覺得這個系統已經無法修復了。」",
-    options: [
-      { tag: "🔥 火爆反應", text: "留言：「就說嘛！教育部那群廢物只會坐著領薪水，台灣完蛋了！」", rage: 25, reason: 0, influence: 5, cred: -5 },
-      { tag: "📊 分析路線", text: "搜尋一下停招的是哪些科系，再想想有沒有更複雜的原因。", rage: 0, reason: 20, influence: 0, cred: 15 },
-      { tag: "👁️ 默默滑過", text: "按個讚，繼續滑下去。", rage: 0, reason: 0, influence: 0, cred: 0 },
-      { tag: "🤔 兩邊都批", text: "留言：「大學自己也有問題吧，開一堆廢科系再怪招生不足。」", rage: 5, reason: 10, influence: 0, cred: 20 },
-    ]
-  },
-  {
-    round: "第 2 關：課堂上的震撼",
-    scenario: "一位你追蹤的大學老師發文說：",
-    post: "「今天收作業，有 8 成學生用 ChatGPT 寫，連格式都一樣。我問他們：你自己的想法是什麼？有人說：『老師我不知道，AI 說什麼就是什麼。』」",
-    options: [
-      { tag: "📢 轉傳出去", text: "立刻分享這則貼文，加上：「大家看！這就是台灣教育的未來！讓更多人知道！」", rage: 5, reason: 0, influence: 30, cred: 5 },
-      { tag: "🔥 情緒爆發", text: "留言：「學生廢，老師也不會教，台灣的年輕人完了。」", rage: 30, reason: 0, influence: 5, cred: -10 },
-      { tag: "📊 冷靜討論", text: "留言一篇長文，分析 AI 工具和教學設計需要同步改變。", rage: 0, reason: 25, influence: 10, cred: 10 },
-      { tag: "👁️ 收進口袋", text: "按讚儲存，覺得這個問題很複雜，先不表態。", rage: 0, reason: 5, influence: 0, cred: 5 },
-    ]
-  },
-  {
-    round: "第 3 關：出征事件爆發",
-    scenario: "有人貼出截圖，說某教育官員在記者會說「AI 時代學生更應該自主學習，老師要放手」。底下留言一面倒在罵。你看到有人開始號召：",
-    post: "「大家一起去官員的 FB 留言！讓他知道基層的聲音！」",
-    options: [
-      { tag: "⚔️ 加入出征", text: "複製留言樣板，跟著去出征。", rage: 20, reason: -5, influence: 15, cred: -10 },
-      { tag: "📊 查原始脈絡", text: "先找完整影片看看，確認話有沒有被斷章取義。", rage: -5, reason: 25, influence: 0, cred: 25 },
-      { tag: "🤔 批評出征行為", text: "留言：「出征解決不了問題，這種動員只是在洩憤。」（兩邊都嫌你）", rage: 0, reason: 15, influence: -5, cred: 30 },
-      { tag: "📢 側翼支援", text: "不去出征，但寫一篇分析文幫助輿論理解事件背景。", rage: 0, reason: 10, influence: 25, cred: 15 },
-    ]
-  },
-  {
-    round: "第 4 關：同溫層的困境",
-    scenario: "你的動態牆漸漸只剩下同樣立場的人。有人發了一篇說：",
-    post: "「少子化不是政府的問題，是年輕人不想生。責任在個人。」（這和你平常看到的貼文方向相反）",
-    options: [
-      { tag: "🔥 反擊", text: "留言開嗆：「說這種話的人肯定沒壓力。薪水低、房價高，生什麼？」", rage: 25, reason: 5, influence: 5, cred: 0 },
-      { tag: "👁️ 滑過去", text: "懶得回，繼續看別的。", rage: 0, reason: 0, influence: 0, cred: 0 },
-      { tag: "📊 寫回應文", text: "冷靜寫一篇有數據的回應，說明結構性因素。", rage: 0, reason: 30, influence: 10, cred: 20 },
-      { tag: "🤔 部分認同", text: "留言：「個人選擇和結構問題都有，不能只怪一邊。」（還是被兩邊嫌）", rage: 0, reason: 15, influence: 0, cred: 25 },
-    ]
-  },
-  {
-    round: "第 5 關：輿論要你表態",
-    scenario: "討論持續延燒，現在演算法把你推到更多人面前。有朋友 tag 你說：",
-    post: "「@你 你是做教育研究的，這件事你怎麼看？台灣高教還有救嗎？」",
-    options: [
-      { tag: "📢 公開發文", text: "寫一篇有觀點有立場的長文，清楚說明你的判斷，接受各方留言。", rage: 0, reason: 20, influence: 35, cred: 10 },
-      { tag: "🔥 情緒作結", text: "直接說：「沒救了，去潤吧。反正教育部不會改的。」", rage: 30, reason: 0, influence: 20, cred: -15 },
-      { tag: "👁️ 拒絕表態", text: "回覆：「太複雜了，我需要更多時間整理想法。」然後沒有下文。", rage: 0, reason: 5, influence: -5, cred: 10 },
-      { tag: "🤔 提出問題", text: "不給答案，改提三個核心問題讓大家思考：「先問自己這三件事...」", rage: 0, reason: 20, influence: 10, cred: 30 },
-    ]
-  },
-];
+  <!-- FOOTER -->
+  <div class="site-footer">
+    府城數位人文實驗室 × OASIS 社群模擬計畫<br>
+    遊戲內容均已虛構化處理，不代表任何政治立場<br>
+    <a href="https://scatjay.github.io/ghost-island-game/">scatjay.github.io/ghost-island-game</a>
+  </div>
 
-const ARCHETYPES = {
-  fire_kimin: {
-    icon: "🔥",
-    name: "火爆鄉民",
-    desc: "每一則教育崩潰的新聞都是你的觸發點。你的怒火真實，你的痛苦有道理——但鍵盤上的火氣，很少能改變教育部的一個字。",
-    quote: "「就說嘛！台灣就是這樣！」",
-    simNote: "在鬼島模擬中，像你這樣的代理人在 12 步內就能讓一則貼文演變成出征事件。",
-    shareQuote: "我是「🔥 火爆鄉民」！情緒真實但有時太快開炸 😤"
-  },
-  calm_analyst: {
-    icon: "📊",
-    name: "冷靜分析師",
-    desc: "你在鍵盤混戰中保持理性，會查數據、找來源、寫長文。很多人嫌你說教，但你的分析往往在兩週後被人截圖說「有個網友早就預測到了」。",
-    quote: "「根據教育部統計，其實問題在於...（2000字）」",
-    simNote: "在鬼島模擬中，分析師原型的貼文傳播慢但持久，7天後仍有人分享。",
-    shareQuote: "我是「📊 冷靜分析師」！理性派，偶爾被嫌說教但說的都是事 🤓"
-  },
-  silent_lurker: {
-    icon: "👁️",
-    name: "無聲潛水者",
-    desc: "你什麼都看，幾乎什麼都不說。你代表沉默的多數——那個每次民調都「無意見」、但選舉當天決定結果的群體。你不是不在乎，你只是疲憊。",
-    quote: "（按讚，繼續滑）",
-    simNote: "在鬼島模擬中，潛水者佔了 35% 的代理人——他們按讚的總數決定了什麼內容被推上演算法。",
-    shareQuote: "我是「👁️ 無聲潛水者」！默默看著一切，偶爾按個讚代替發言 🤫"
-  },
-  influencer: {
-    icon: "📢",
-    name: "側翼網紅",
-    desc: "你深知分享的力量，每次轉發都是一次動員。你幫助議題擴散，也有時在不確認來源的情況下加速了誤解的傳播。影響力大，責任也重。",
-    quote: "「大家快分享！讓更多人知道！」",
-    simNote: "在鬼島模擬中，側翼網紅是資訊泡沫的核心節點——移除這類代理人，輿論擴散速度下降 60%。",
-    shareQuote: "我是「📢 側翼網紅」！資訊傳播擔當，雖然有時按太快 📣"
-  },
-  skeptic: {
-    icon: "🤔",
-    name: "懷疑論者",
-    desc: "你看穿了兩邊的表演。你的「各打五十大板」讓你在任何陣營都不受歡迎，但你問的問題有時是整串討論裡唯一值得留下的東西。",
-    quote: "「但是...另一方面...其實都有問題...」",
-    simNote: "在鬼島模擬中，懷疑論者的留言常常讓出征事件在高峰後提前平息。",
-    shareQuote: "我是「🤔 懷疑論者」！兩邊都嫌我，但我不在乎（其實有一點在乎） 😐"
-  },
-  mob_member: {
-    icon: "⚔️",
-    name: "出征隊員",
-    desc: "你相信集體的聲音可以改變什麼。你跟著動員，加入出征。有時真的讓人聽見了邊緣的聲音，有時只是讓事情更亂。邊界在哪，值得你繼續想。",
-    quote: "「大家一起去！正義不等人！」",
-    simNote: "在鬼島模擬中，出征隊員是出征事件的執行層——但 76% 的出征在 48 小時後完全沒有改變任何政策。",
-    shareQuote: "我是「⚔️ 出征隊員」！正義感爆棚，有時衝太快但出發點是好的 💪"
-  }
-};
-
-let stats = { rage: 0, reason: 0, influence: 0, cred: 0 };
-let currentQ = 0;
-
-function startGame() {
-  document.getElementById('splash').style.display = 'none';
-  document.getElementById('game').style.display = 'block';
-  renderQuestion();
-}
-
-function renderQuestion() {
-  const q = QUESTIONS[currentQ];
-  const pct = (currentQ / QUESTIONS.length) * 100;
-  document.getElementById('progressFill').style.width = pct + '%';
-
-  const card = document.getElementById('questionCard');
-  card.innerHTML = `
-    <div class="round-label">${q.round}</div>
-    <div class="scenario">${q.scenario}</div>
-    <div class="post-bubble">${q.post}</div>
-    <div class="options">
-      ${q.options.map((o, i) => `
-        <button class="opt-btn" onclick="choose(${i})">
-          <span class="opt-tag">${o.tag}</span>
-          <span class="opt-text">${o.text}</span>
-        </button>
-      `).join('')}
-    </div>
-  `;
-}
-
-function choose(idx) {
-  const o = QUESTIONS[currentQ].options[idx];
-  stats.rage = Math.max(0, stats.rage + (o.rage || 0));
-  stats.reason = Math.max(0, stats.reason + (o.reason || 0));
-  stats.influence = Math.max(0, stats.influence + (o.influence || 0));
-  stats.cred = Math.max(0, stats.cred + (o.cred || 0));
-
-  updateStatDisplay();
-  currentQ++;
-  if (currentQ >= QUESTIONS.length) showResult();
-  else renderQuestion();
-}
-
-function updateStatDisplay() {
-  ['rage','reason','influence','cred'].forEach(k => {
-    document.getElementById('val-'+k).textContent = stats[k];
-    const chip = document.getElementById('chip-'+k);
-    chip.classList.toggle('active', stats[k] > 0);
-  });
-}
-
-function showResult() {
-  document.getElementById('game').style.display = 'none';
-  document.getElementById('result').style.display = 'block';
-
-  const archKey = determineArchetype();
-  const arch = ARCHETYPES[archKey];
-
-  document.getElementById('resultIcon').textContent = arch.icon;
-  document.getElementById('resultName').textContent = arch.name;
-  document.getElementById('resultDesc').textContent = arch.desc;
-  document.getElementById('resultQuote').textContent = arch.quote;
-  document.getElementById('simNote').textContent = arch.simNote;
-
-  const max = Math.max(stats.rage, stats.reason, stats.influence, stats.cred, 1);
-  ['rage','reason','influence','cred'].forEach(k => {
-    const pct = Math.round((stats[k] / max) * 100);
-    setTimeout(() => {
-      document.getElementById('bar-'+k).style.width = pct + '%';
-      document.getElementById('bval-'+k).textContent = stats[k];
-    }, 300);
-  });
-
-  const shareMsg = `${arch.shareQuote}\n你也來測：鬼島鄉民測驗\n#鬼島鄉民 #台灣教育`;
-  document.getElementById('shareText').textContent = shareMsg;
-  document.getElementById('resultName').dataset.shareMsg = shareMsg;
-  window._shareMsg = shareMsg;
-}
-
-function determineArchetype() {
-  const s = stats;
-  const max = Math.max(s.rage, s.reason, s.influence, s.cred);
-  if (max === 0) return 'silent_lurker';
-  if (s.rage === max && s.rage >= 40) return 'fire_kimin';
-  if (s.influence === max && s.influence >= 30 && s.rage > 20) return 'mob_member';
-  if (s.influence === max) return 'influencer';
-  if (s.reason === max) return 'calm_analyst';
-  if (s.cred === max) return 'skeptic';
-  if (s.rage === max) return 'fire_kimin';
-  return 'silent_lurker';
-}
-
-function copyShare() {
-  navigator.clipboard.writeText(window._shareMsg || '').then(() => {
-    const btn = document.querySelector('.btn-copy');
-    btn.textContent = '✅ 已複製！';
-    setTimeout(() => btn.textContent = '📋 複製分享文案', 2000);
-  });
-}
-
-function retry() {
-  stats = { rage: 0, reason: 0, influence: 0, cred: 0 };
-  currentQ = 0;
-  document.getElementById('result').style.display = 'none';
-  document.getElementById('splash').style.display = 'block';
-}
-</script>
 </body>
 </html>
