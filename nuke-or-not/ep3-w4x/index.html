@@ -39,8 +39,8 @@
   @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 
   .series-badge {
-    display: inline-block; background: var(--border); color: var(--muted);
-    font-size: 0.72rem; padding: 3px 10px; border-radius: 20px; margin-bottom: 12px;
+    display: table; margin: 0 auto 12px; background: var(--border); color: var(--muted);
+    font-size: 0.72rem; padding: 3px 10px; border-radius: 20px;
   }
   .intro-header { text-align: center; padding: 24px 0 20px; }
   .game-title { font-size: 1.9rem; font-weight: 800; margin-bottom: 8px; line-height: 1.2; }
@@ -152,7 +152,11 @@
     border-radius: 12px; padding: 16px; margin-bottom: 14px;
   }
   .speaker-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .speaker-avatar { font-size: 1.5rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--card2); border-radius: 50%; border: 1px solid var(--border); }
+  .speaker-avatar {
+    font-size: 1.5rem; width: 40px; height: 40px; display: flex;
+    align-items: center; justify-content: center; background: var(--card2);
+    border-radius: 50%; border: 1px solid var(--border);
+  }
   .speaker-info {}
   .speaker-role { font-size: 0.8rem; font-weight: 700; }
   .speaker-stance { font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
@@ -161,6 +165,29 @@
     border-left: 2px solid var(--border); padding-left: 12px;
   }
 
+  /* ── Speaker card entrance ── */
+  @keyframes speakerEnter {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes avatarPop {
+    0%   { transform: scale(0.7); opacity: 0; }
+    60%  { transform: scale(1.12); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  @keyframes textReveal {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes responseSlide {
+    from { opacity: 0; transform: translateX(-10px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .speaker-card.entering { animation: speakerEnter 0.36s ease forwards; }
+  .speaker-card.entering .speaker-avatar { animation: avatarPop 0.4s ease 0.1s both; }
+  .speaker-card.entering .speaker-text  { animation: textReveal 0.4s ease 0.18s both; }
+
   /* Response choices */
   .response-label { font-size: 0.75rem; color: var(--muted); font-weight: 600; margin-bottom: 8px; letter-spacing: 0.04em; }
   .response-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
@@ -168,7 +195,9 @@
     padding: 10px 12px; border-radius: 8px;
     border: 1px solid var(--border); background: var(--card2);
     color: var(--text); font-size: 0.82rem; font-family: inherit;
-    cursor: pointer; transition: all 0.15s; text-align: left; line-height: 1.4;
+    cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s;
+    text-align: left; line-height: 1.4;
+    opacity: 0; animation: responseSlide 0.3s ease forwards;
   }
   .response-btn:hover { border-color: var(--yellow); color: var(--yellow-light); }
   .response-btn .rb-type { font-size: 0.68rem; color: var(--muted); margin-bottom: 3px; font-weight: 700; letter-spacing: 0.03em; }
@@ -751,8 +780,10 @@ function renderHearing() {
   lbl.textContent = `第 ${currentRound + 1} / ${speakers.length} 位`;
   dotsEl.appendChild(lbl);
 
-  // Speaker card
-  document.getElementById('speaker-card').innerHTML = `
+  // Speaker card — set content then retrigger entrance animation
+  const cardEl = document.getElementById('speaker-card');
+  cardEl.classList.remove('entering');
+  cardEl.innerHTML = `
     <div class="speaker-meta">
       <div class="speaker-avatar">${speaker.avatar}</div>
       <div class="speaker-info">
@@ -762,13 +793,17 @@ function renderHearing() {
     </div>
     <div class="speaker-text">${speaker.text}</div>
   `;
+  // force reflow so removing the class actually resets the animation
+  void cardEl.offsetWidth;
+  cardEl.classList.add('entering');
 
-  // Response options
+  // Response options — staggered slide-in
   const optEl = document.getElementById('response-options');
   optEl.innerHTML = '';
-  RESPONSES.forEach(r => {
+  RESPONSES.forEach((r, i) => {
     const btn = document.createElement('button');
     btn.className = 'response-btn';
+    btn.style.animationDelay = `${0.22 + i * 0.07}s`;
     btn.innerHTML = `<div class="rb-type">${r.type}</div>${r.label}`;
     btn.onclick = () => chooseResponse(r.id);
     optEl.appendChild(btn);

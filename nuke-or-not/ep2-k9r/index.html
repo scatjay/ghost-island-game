@@ -491,6 +491,25 @@
     pointer-events: none;
     font-style: italic;
   }
+
+  /* STANCE SELECT */
+  #stance-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .stance-select-card {
+    background: var(--card); border: 2px solid var(--border);
+    border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: all 0.15s;
+  }
+  .stance-select-card:hover { border-color: var(--orange); }
+  .stance-select-card.selected { border-color: var(--orange); background: rgba(234,88,12,0.08); }
+  .stance-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .stance-card-emoji { font-size: 1.5rem; flex-shrink: 0; }
+  .stance-card-name { font-size: 1rem; font-weight: 800; }
+  .stance-card-tag { display: inline-block; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-top: 2px; }
+  .stance-card-post {
+    font-size: 0.78rem; color: var(--muted); font-style: italic;
+    background: var(--darker); border-left: 2px solid var(--border);
+    padding: 6px 10px; border-radius: 0 6px 6px 0; margin-bottom: 8px; line-height: 1.5;
+  }
+  .stance-card-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -511,15 +530,11 @@
       </div>
     </div>
 
-    <div class="role-card">
-      <h3>你扮演的角色</h3>
-      <div class="role-name">📝 貼文作者</div>
-      <div class="role-desc">
-        你剛發了一篇對總統重啟核電感到失望的貼文。290個心情，615則留言。
-        有人支持你，有人攻擊你，有人說出你沒想到的話。
-        <br><br>
-        你有四個動作：<strong>隱藏</strong>、<strong>回覆</strong>、<strong>按讚</strong>、<strong>略過</strong>。
-      </div>
+    <p style="font-size:0.88rem;color:var(--muted);line-height:1.6;margin-bottom:12px;">選擇你的貼文立場。不同的立場，收到的留言也完全不同。</p>
+    <div id="stance-grid"></div>
+
+    <div style="font-size:0.82rem;color:var(--muted);background:rgba(255,255,255,0.03);border-radius:8px;padding:10px 12px;margin-bottom:16px;line-height:1.6;">
+      你有四個動作：<strong style="color:var(--text)">隱藏</strong>、<strong style="color:var(--text)">回覆</strong>、<strong style="color:var(--text)">按讚</strong>、<strong style="color:var(--text)">略過</strong>。每個決定都在塑造你的同溫層。
     </div>
 
     <div class="context-box">
@@ -529,7 +544,7 @@
     <button class="btn btn-primary" onclick="startGame()">接收留言，開始管理 →</button>
 
     <div class="game-footer">
-      共 6 則留言情境 · 約 3 分鐘
+      三種立場 · 各 6 則留言情境 · 約 3 分鐘
       <div class="ep-nav">
         <a class="ep-link released" href="../ep1/">✓ EP.1 臉腫了嗎？</a>
         <a class="ep-link current" href="#">▶ EP.2 您有615則留言</a>
@@ -694,118 +709,385 @@
 </div>
 <script>
 let currentRound = 0;
+let selectedStance = 'activist';
+let activeComments = [];
 let meters = { echo: 20, dialogue: 50, stress: 10, clarity: 60 };
 const actions_log = [];
 
-const COMMENTS = [
+// ════════════════════════════════════════
+// POST STANCES — 三種身份，不是鄉民類型
+// ════════════════════════════════════════
+const POST_STANCES = {
+  activist: {
+    id: 'activist', emoji: '📢', title: '前反核倡議者',
+    tagBg: 'rgba(22,163,74,0.2)', tagColor: '#4ade80',
+    post: '「當年我舉過那個牌子。今天，我不知道當時那個我算什麼。」',
+    desc: '你曾在凱道舉牌「我是人，我反核」，投票給執政黨是因為非核家園的承諾。今天，你發了一篇不知道該怎麼定義的文——不是憤怒，是困惑加上一點什麼。',
+    startMeters: { echo: 25, dialogue: 45, stress: 18, clarity: 55 }
+  },
+  resident: {
+    id: 'resident', emoji: '🏘️', title: '核電廠附近居民',
+    tagBg: 'rgba(234,88,12,0.2)', tagColor: '#fb923c',
+    post: '「我住核三廠十公里外。今天看到這個新聞，不知道該怎麼想。想聽聽大家的意見。」',
+    desc: '你不是什麼政治人，只是住在那裡。你發的不是立場文，是一個真實的問題——然後留言區炸了，各路人馬開始告訴你「你應該怎麼想」。',
+    startMeters: { echo: 12, dialogue: 58, stress: 22, clarity: 65 }
+  },
+  journalist: {
+    id: 'journalist', emoji: '📰', title: '能源線記者',
+    tagBg: 'rgba(139,92,246,0.2)', tagColor: '#a78bfa',
+    post: '「整理了五個重啟核電還沒答案的問題：核安審查、廢料處置、民意程序、電網準備、成本估算。目前全部空白。」',
+    desc: '你跑能源線五年，試圖整理一篇客觀的分析。結果兩邊都說你偏頗——藍的說你是綠媒在洗地，綠的說你給重啟開後門。中立在台灣留言區是最孤獨的立場。',
+    startMeters: { echo: 8, dialogue: 65, stress: 12, clarity: 75 }
+  }
+};
+
+// ════════════════════════════════════════
+// COMMENT SETS — 3 身份 × 6 則留言
+// ════════════════════════════════════════
+const COMMENT_SETS = {
+
+  // ── 前反核倡議者：你曾舉牌，現在困惑 ──
+  activist: [
   {
-    avatar: '😤', name: '匿名鄉民A', stance: 'deep_blue', stanceLabel: '深藍',
-    time: '1天前', likes: 114, replies: 2,
-    text: '護航不了自己改批判國蔥了是不是，沒救了你們',
-    situation: '⚡ 這則留言已有 114 個讚。它正在被大量轉貼，很多人看到它後來到你的貼文。',
+    avatar: '😏', name: '匿名鄉民A', stance: 'deep_blue', stanceLabel: '深藍',
+    time: '1天前', likes: 156, replies: 4,
+    text: '哈哈哈哈哈！當初最大聲的，現在最安靜了。臉腫了嗎？',
+    situation: '⚡ 156讚。這是你貼文下目前最多人互動的留言，已被大量截圖轉傳。',
     actions: {
-      hide:  { echo: +15, dialogue: -10, stress: -10, clarity: +5,
-               fb: '你隱藏了它。但 114 個讚已經說明它引起共鳴。被隱藏的留言，留言者自己還是看得到——他可能覺得你在壓制他。' },
-      reply: { echo: -10, dialogue: +15, stress: +25, clarity: +10,
-               fb: '你回覆了。這會引來更多人加入。你的回覆會被截圖，在你控制不了的地方流傳。' },
+      hide:  { echo: +18, dialogue: -12, stress: -12, clarity: +5,
+               fb: '你隱藏了它。156讚說明它引起共鳴——被隱藏不代表消失，他自己還是看得到，可能覺得你在壓制。' },
+      reply: { echo: -12, dialogue: +15, stress: +28, clarity: +10,
+               fb: '你回覆了。這種回覆會被截圖，在你控制不了的地方流傳。你說的每一個字都會被放大。' },
       like:  { echo: +5, dialogue: -5, stress: -5, clarity: -15,
-               fb: '你按讚了一則攻擊你的留言？這不常見。可能是在諷刺，也可能讓對方更困惑。' },
-      skip:  { echo: 0, dialogue: 0, stress: +8, clarity: +10,
-               fb: '你略過了。它還在那裡。演算法可能還在推它。' }
+               fb: '你按讚了嘲諷你的留言。有人覺得你在認錯，有人覺得你在冷嘲熱諷——沒有人知道你真正的意思。' },
+      skip:  { echo: 0, dialogue: 0, stress: +10, clarity: +8,
+               fb: '你略過了。它還在那裡，演算法還在推它，成為很多人看你這篇貼文的第一印象。' }
     }
   },
   {
-    avatar: '😏', name: '匿名鄉民B', stance: 'deep_blue', stanceLabel: '深藍',
-    time: '1天前', likes: 206, replies: 5,
-    text: '我笑了，最後一句多說的，因為在這件事上沒有堅持的，是執政黨全體，不舉執政黨當例子改扯在野黨咖？',
-    situation: '🔴 這是你貼文下讚數最高的留言（206讚）。它針對你的內容邏輯提出質疑。',
+    avatar: '😔', name: '前倡議夥伴', stance: 'deep_green', stanceLabel: '同路人',
+    time: '1天前', likes: 12, replies: 1,
+    text: '我和你的感覺一樣。不是憤怒，是一種很難描述的東西——像是你以為自己站在一個地方，然後地板不見了。',
+    situation: '😶 12讚。來自曾經並肩的人。低調，但說中了你現在的感覺。',
     actions: {
-      hide:  { echo: +20, dialogue: -20, stress: -5, clarity: -10,
-               fb: '你隱藏了讚數最高的留言。其他人會注意到「最相關留言」消失了。這個決定本身就說明了一些事。' },
-      reply: { echo: -15, dialogue: +20, stress: +20, clarity: +15,
-               fb: '你決定正面回應。這是高風險但高清醒度的選擇——你必須真的有話說，不然會被圍攻。' },
-      like:  { echo: +5, dialogue: +5, stress: -10, clarity: +5,
-               fb: '你按讚了批評你的留言。這讓一些人意外，也讓一些人覺得你有雅量。' },
-      skip:  { echo: +5, dialogue: -5, stress: +15, clarity: +5,
-               fb: '你略過了。206讚的留言繼續掛在那裡，成為這篇貼文的「定調」留言。' }
+      hide:  { echo: +5, dialogue: -5, stress: 0, clarity: -10,
+               fb: '你隱藏了理解你的人。也許你不想讓這種情緒被看見，也許你覺得這樣太脆弱了。' },
+      reply: { echo: -5, dialogue: +10, stress: +8, clarity: +12,
+               fb: '你回應了。這是留言區裡最真實的交流——不需要立場，只是兩個人在說他們真實的感受。' },
+      like:  { echo: 0, dialogue: +8, stress: -5, clarity: +8,
+               fb: '一個讚，讓對方知道你看到了。有時候這就夠了。' },
+      skip:  { echo: +5, dialogue: -5, stress: +5, clarity: +5,
+               fb: '略過了。他說的話留在那裡，沒有人回應——就像現在很多人的感受一樣。' }
     }
   },
   {
-    avatar: '🤔', name: '匿名鄉民C', stance: 'center', stanceLabel: '中間',
-    time: '1天前', likes: 26, replies: 0,
-    text: '所謂的安靜，有沒有可能是被打臉到滿地找牙？',
-    situation: '💬 這則留言的語氣介於嘲諷和提問之間。26讚，中等熱度，但切中要害。',
+    avatar: '📣', name: '黨員護航留言', stance: 'deep_green', stanceLabel: '執政黨支持者',
+    time: '1天前', likes: 45, replies: 3,
+    text: '政策本來就要因時制宜。你這樣說只會讓對手更得意。我們應該支持黨的決定，內部批評要有場合。',
+    situation: '🟢 45讚，來自你同一個政治陣營的人。他在要你「顧全大局」。',
     actions: {
-      hide:  { echo: +10, dialogue: -8, stress: -5, clarity: 0,
-               fb: '隱藏一則「提問」比隱藏謾罵更敏感。旁觀者可能覺得你在逃避問題。' },
-      reply: { echo: -5, dialogue: +15, stress: +15, clarity: +20,
-               fb: '你正面回應了這個問題。這需要誠實。你的回答品質決定了後續的對話方向。' },
-      like:  { echo: 0, dialogue: +10, stress: 0, clarity: +10,
-               fb: '你按讚了嘲諷你的留言，帶著一種苦笑的自我認知。' },
+      hide:  { echo: +12, dialogue: -10, stress: -5, clarity: -8,
+               fb: '你隱藏了要你閉嘴的留言。這種「內部批評要有場合」的邏輯，是很多人選擇沉默的原因。' },
+      reply: { echo: -8, dialogue: +15, stress: +18, clarity: +20,
+               fb: '你回應了。你是否同意「有場合」的說法？你的答案決定了你和這個政治圈的關係。' },
+      like:  { echo: +8, dialogue: -8, stress: -5, clarity: -15,
+               fb: '你按讚了「顧全大局」的留言。也許你覺得他說得對——或者你只是不想繼續這個對話。' },
       skip:  { echo: +5, dialogue: 0, stress: +5, clarity: +5,
-               fb: '略過了。這類留言會在沒有回應的情況下，讓旁觀者自己解讀。' }
+               fb: '略過了。「內部批評要有場合」的聲音繼續存在。很多人因為這種壓力選擇不說話。' }
     }
   },
   {
-    avatar: '😢', name: '匿名鄉民D', stance: 'center', stanceLabel: '中間',
-    time: '1天前', likes: 3, replies: 0,
-    text: '大家好累！好煩！好無奈！重啟後也用不了多久，當初何必停建！總是告訴大家現在不這樣做以後會後悔，然後再來推翻重來！',
-    situation: '😔 只有3讚，但這則留言說出了很多沉默的人的感受。',
+    avatar: '🧐', name: '理性提問者', stance: 'center', stanceLabel: '中間',
+    time: '1天前', likes: 21, replies: 0,
+    text: '你的問題是廢料問題還沒解決？還是你在生氣被背叛？這兩件事不一樣，說清楚比較好。',
+    situation: '💬 21讚，切中要害的區分。這個問題問的是你自己，不是核電。',
     actions: {
-      hide:  { echo: +5, dialogue: -5, stress: -5, clarity: -10,
-               fb: '你隱藏了最接近「無聲多數」情緒的留言。他們不會知道，但你知道。' },
-      reply: { echo: -5, dialogue: +10, stress: +10, clarity: +15,
-               fb: '你回應了低讚但真誠的留言。這讓這個人感覺被看見了——即使沒人在意。' },
-      like:  { echo: 0, dialogue: +5, stress: 0, clarity: +10,
-               fb: '一個讚，讓這個人知道他的疲憊被看到了。' },
-      skip:  { echo: +5, dialogue: -5, stress: +5, clarity: 0,
-               fb: '略過了。它會消失在演算法裡，沒有人看到。這就是「沉默多數」的命運。' }
+      hide:  { echo: +10, dialogue: -10, stress: -5, clarity: -8,
+               fb: '你隱藏了一個要你誠實的問題。也許因為你還沒想清楚答案是什麼。' },
+      reply: { echo: -5, dialogue: +18, stress: +12, clarity: +22,
+               fb: '你回答了——廢料問題，還是背叛感？誠實回答這個問題，比任何論點都更能推進對話。' },
+      like:  { echo: -5, dialogue: +10, stress: 0, clarity: +12,
+               fb: '你按讚了一個問倒你的問題。這說明你有能力分辨情緒和論點——即使你自己也混在一起。' },
+      skip:  { echo: +5, dialogue: -5, stress: +5, clarity: +5,
+               fb: '略過了。這個問題讓旁觀者自己去猜你到底在說什麼——廢料，還是心碎。' }
     }
   },
   {
-    avatar: '🧪', name: '匿名鄉民E', stance: 'center', stanceLabel: '理性派',
-    time: '1天前', likes: 8, replies: 3,
-    text: '核一核二核四是藍的停的，核三是綠的停的。核廢料問題不是重啟才有，廢料現在就在那裡。這不是支持或反對重啟，是說清楚事實。',
-    situation: '📊 這則留言在說事實，但破壞了留言區藍綠對戰的節奏。',
+    avatar: '📊', name: '事實糾錯者', stance: 'center', stanceLabel: '理性派',
+    time: '1天前', likes: 8, replies: 2,
+    text: '核一核二核四是藍的停的，核三是綠的停的。廢料問題不是重啟才有，廢料現在就在那裡。這不是在護航，是說清楚事實。',
+    situation: '📋 8讚，說的是事實，但破壞了情緒的一致性。',
     actions: {
       hide:  { echo: +15, dialogue: -20, stress: -5, clarity: -20,
-               fb: '你隱藏了一則說事實的留言。也許它破壞了你的敘事框架？這個決定最值得你自問。' },
+               fb: '你隱藏了一則說事實的留言。也許它打亂了你的敘事，或者你覺得「現在不是討論這個的時候」。' },
       reply: { echo: -10, dialogue: +20, stress: +10, clarity: +20,
-               fb: '你回應了理性留言。這讓討論質量上升，但可能讓火爆的人覺得「無聊」而離開。' },
+               fb: '你回應了事實性留言。討論品質上升——但可能讓情緒中的人覺得你「太理性了」。' },
       like:  { echo: -5, dialogue: +10, stress: 0, clarity: +15,
-               fb: '按讚一則事實留言。這是貼文作者能做到的最簡單的理性行為。' },
+               fb: '按讚一則事實留言，即使它讓你的情緒顯得有點失焦。這是誠實的選擇。' },
       skip:  { echo: +5, dialogue: -10, stress: +5, clarity: -5,
-               fb: '略過了。事實在留言區裡沉了下去，被情緒留言覆蓋。' }
+               fb: '略過了。事實沉在留言區裡，被情緒留言覆蓋。' }
     }
   },
   {
-    avatar: '🔥', name: '匿名鄉民F', stance: 'deep_blue', stanceLabel: '深藍',
-    time: '20小時前', likes: 67, replies: 2,
-    text: '你終於知道自己只是執政黨的衛生棉，用完即丟',
-    situation: '🚨 67讚。措辭帶有侮辱性，但引起強烈共鳴。這是你會選擇隱藏的那種留言嗎？',
+    avatar: '🔥', name: '最高讚留言', stance: 'deep_blue', stanceLabel: '深藍',
+    time: '20小時前', likes: 187, replies: 6,
+    text: '執政黨的衛生棉，用完即丟。不是今天的事了。',
+    situation: '🚨 187讚，被你隱藏前已廣泛流傳。它說中了很多人的感受——包括也許你自己的。',
     actions: {
-      hide:  { echo: +20, dialogue: -5, stress: -15, clarity: +5,
-               fb: '你隱藏了它——就像真實貼文作者做的那樣。67讚說明它說中了一些人的感受。你藏住了一面鏡子。' },
-      reply: { echo: -20, dialogue: +10, stress: +30, clarity: +20,
-               fb: '你回覆了。這需要勇氣。你的每個字都會被放大檢視，截圖流傳。' },
+      hide:  { echo: +22, dialogue: -8, stress: -15, clarity: +5,
+               fb: '你隱藏了它——就像真實貼文作者做的那樣。187讚說明這句話說中了什麼。你藏住了一面鏡子。問題是，那面鏡子照出的是誰？' },
+      reply: { echo: -18, dialogue: +10, stress: +30, clarity: +20,
+               fb: '你回覆了。這需要勇氣，也需要你已經有答案——你覺得自己是衛生棉嗎？還是你不是？' },
       like:  { echo: 0, dialogue: 0, stress: -5, clarity: -20,
-               fb: '你按讚了一則侮辱你的留言。這讓人完全摸不清你的想法——也許那就是你的目的。' },
+               fb: '你按讚了一則可能在說你自己的留言。這讓人完全摸不清你的想法——也許那就是你的意思。' },
       skip:  { echo: +5, dialogue: -5, stress: +10, clarity: +10,
-               fb: '你略過了。它繼續存在，成為這篇貼文下最多人看到的留言之一。' }
+               fb: '略過了。它繼續存在，成為這篇貼文下最多人看到的留言。它說的事情，你心裡有沒有一個答案？' }
     }
   }
-];
+  ],
+
+  // ── 核電廠附近居民：你發了猶豫不決的感性貼文 ──
+  resident: [
+    {
+      avatar: '🏙️', name: '北部網友', stance: 'deep_blue', stanceLabel: '深藍',
+      time: '1小時前', likes: 134, replies: 9,
+      text: '你住那裡你才不想開，台北要限電你又最大聲。你在保護的是誰？',
+      situation: '⚡ 134讚。南北矛盾的老梗——你的「住在附近」被當成自私的藉口。',
+      actions: {
+        hide:  { echo: +18, dialogue: -12, stress: -8, clarity: -5,
+                 fb: '你隱藏了最刺的留言。但它說中了一件事：你的地理位置，在別人眼中是政治籌碼，不是真實感受。' },
+        reply: { echo: -8, dialogue: +18, stress: +25, clarity: +20,
+                 fb: '你回覆了。解釋自己不是反對電力、只是不想承擔別人不願承擔的風險——這句話能不能說清楚，決定了這場對話的品質。' },
+        like:  { echo: 0, dialogue: +5, stress: -5, clarity: +8,
+                 fb: '你按讚了攻擊自己的留言。一種「我聽到了」的姿態——對方可能誤解，也可能感到意外。' },
+        skip:  { echo: +10, dialogue: -8, stress: +10, clarity: +5,
+                 fb: '你略過了。134讚的南北矛盾繼續掛在那裡，成為其他讀者對你這篇貼文的第一印象。' }
+      }
+    },
+    {
+      avatar: '😔', name: '倡議者借用', stance: 'deep_green', stanceLabel: '深綠',
+      time: '2小時前', likes: 48, replies: 2,
+      text: '謝謝你發聲。你的故事就是我們最好的反核論據。希望你加入我們的連署。',
+      situation: '📢 48讚。你的個人感受被倡議團體當作論述材料——你願意嗎？',
+      actions: {
+        hide:  { echo: -5, dialogue: +8, stress: 0, clarity: +15,
+                 fb: '你隱藏了把你「工具化」的留言。你在保護自己的故事，不讓它變成政治宣傳。' },
+        reply: { echo: -10, dialogue: +15, stress: +15, clarity: +20,
+                 fb: '你回覆了。「謝謝，但我不是反核，我只是困惑。」這句話說出來，你的故事才真正屬於你。' },
+        like:  { echo: +15, dialogue: -10, stress: -5, clarity: -15,
+                 fb: '你按讚了。現在你的貼文被歸入了倡議框架——你的猶豫消失了，剩下一個「反核居民」的標籤。' },
+        skip:  { echo: +5, dialogue: -5, stress: +8, clarity: +5,
+                 fb: '你略過了。倡議者的轉發讓你的貼文擴散，但擴散的版本裡你已經「選好邊」了。' }
+      }
+    },
+    {
+      avatar: '🔧', name: '核電工程師', stance: 'center', stanceLabel: '中間',
+      time: '3小時前', likes: 31, replies: 4,
+      text: '我在廠裡工作十五年。現代安全系統跟以前不一樣了。你說「不知道該怎麼想」，我也不知道怎麼跟你說。',
+      situation: '🔬 31讚。一個在廠裡工作的人留言了——他不是來辯論，是來說「我也很難」。',
+      actions: {
+        hide:  { echo: +5, dialogue: -10, stress: -5, clarity: -12,
+                 fb: '你隱藏了唯一一則「對話可能成真」的留言。也許那個困難你還沒準備好面對。' },
+        reply: { echo: -8, dialogue: +22, stress: +12, clarity: +25,
+                 fb: '你回覆了。這是留言區裡最難得的對話——兩個都「不知道怎麼想」的人，能不能說點什麼真實的？' },
+        like:  { echo: 0, dialogue: +12, stress: 0, clarity: +15,
+                 fb: '你按讚了。一個安靜的認可——「我看到你了」。這可能是這則留言裡最誠實的互動。' },
+        skip:  { echo: 0, dialogue: -8, stress: +8, clarity: +5,
+                 fb: '你略過了。31讚，已轉分享4次。那個工程師可能在等你。' }
+      }
+    },
+    {
+      avatar: '😤', name: '能源倡議者', stance: 'deep_blue', stanceLabel: '深藍',
+      time: '4小時前', likes: 67, replies: 6,
+      text: '你說「不知道該怎麼想」——這就是綠營洗腦的結果。事實是：核電安全、缺電才危險。',
+      situation: '💬 67讚。有人把你的困惑診斷成「被洗腦」——他沒有回應你的感受，只想糾正你的結論。',
+      actions: {
+        hide:  { echo: +14, dialogue: -10, stress: -8, clarity: -5,
+                 fb: '你隱藏了這則留言。他不是在對話，是在宣告。隱藏它讓你少一個噪音，但那個「你被洗腦」的指控還在別人心裡。' },
+        reply: { echo: -8, dialogue: +15, stress: +20, clarity: +18,
+                 fb: '你回覆了。「我不是被洗腦，我是真的住在那裡。」這句話能說出來，是這篇貼文最重要的自我定義。' },
+        like:  { echo: +10, dialogue: -8, stress: -10, clarity: -15,
+                 fb: '你按讚了診斷你「被洗腦」的人。現在你看起來同意他的說法。你的猶豫被吃掉了。' },
+        skip:  { echo: +8, dialogue: -5, stress: +10, clarity: +5,
+                 fb: '你略過了。67讚的留言繼續定義這篇貼文的氣氛——你的困惑在他的確定中變得越來越渺小。' }
+      }
+    },
+    {
+      avatar: '🤷', name: '隔壁鄉鎮居民', stance: 'center', stanceLabel: '中間',
+      time: '5小時前', likes: 19, replies: 1,
+      text: '我住核三廠十五公里外。說真的，我從來沒想過這件事。你這篇讓我開始想了。',
+      situation: '💡 19讚，被轉分享。你的貼文讓一個從不想這件事的人開始想了——這是你的影響力。',
+      actions: {
+        hide:  { echo: 0, dialogue: -8, stress: 0, clarity: -10,
+                 fb: '你隱藏了一則讓人開始思考的留言。你為什麼要這樣做？也許你覺得她說的還不夠深？' },
+        reply: { echo: -5, dialogue: +15, stress: +5, clarity: +15,
+                 fb: '你回覆了。「你願意開始想，比我能做的任何事都重要。」這句話讓這篇貼文值得了。' },
+        like:  { echo: 0, dialogue: +10, stress: 0, clarity: +12,
+                 fb: '你按讚了。19讚，但它讓一個人開始思考。這可能是這場留言戰裡最真實的進展。' },
+        skip:  { echo: 0, dialogue: 0, stress: +3, clarity: +8,
+                 fb: '你略過了。她還是開始想了——你不回也沒關係，但少了一個「繼續」的機會。' }
+      }
+    },
+    {
+      avatar: '🏆', name: '最高讚留言', stance: 'deep_green', stanceLabel: '深綠',
+      time: '30分鐘前', likes: 203, replies: 14,
+      text: '你說「不知道該怎麼想」。我覺得你知道。你只是不敢說。',
+      situation: '🔥 203讚，這是留言區最高讚。他沒有說你「反核」或「挺核」，他說你在逃避自己的感受。',
+      actions: {
+        hide:  { echo: +20, dialogue: -15, stress: -12, clarity: -18,
+                 fb: '你把最高讚隱藏了。也許因為他說中了什麼。但這則留言已經被截圖、被轉發——隱藏改變不了它的存在。' },
+        reply: { echo: -12, dialogue: +20, stress: +30, clarity: +30,
+                 fb: '你回覆了。如果你說出了真實的感受——這會是這篇貼文最有價值的一刻。如果你迴避，他的猜測就成真了。' },
+        like:  { echo: -5, dialogue: +10, stress: -5, clarity: +20,
+                 fb: '你按讚了。一個誠實的「你說得對」。203讚變成204讚——你承認了自己知道但不敢說的事。' },
+        skip:  { echo: +10, dialogue: -10, stress: +15, clarity: -5,
+                 fb: '你略過了。203讚的「你在逃避」繼續掛在最頂端。每個來看你貼文的人，第一眼都會看到它。' }
+      }
+    }
+  ],
+
+  // ── 能源線記者：你整理了五個無解問題 ──
+  journalist: [
+    {
+      avatar: '😠', name: '藍方讀者', stance: 'deep_blue', stanceLabel: '深藍',
+      time: '1小時前', likes: 91, replies: 7,
+      text: '「五個問題全部空白」是在說反對。你在幫誰洗地，大家都看得清楚。你不是記者，你是政治線的偽裝。',
+      situation: '⚡ 91讚。藍方把你的「五個問題」讀成反核立場，並指控你假裝中立。',
+      actions: {
+        hide:  { echo: +15, dialogue: -12, stress: -8, clarity: -8,
+                 fb: '你隱藏了這個指控。但它不只是攻擊——它提出了一個真實的問題：「列出問題」和「提出質疑」之間，你真的分得清楚嗎？' },
+        reply: { echo: -10, dialogue: +20, stress: +22, clarity: +22,
+                 fb: '你回覆了，解釋五個問題都是新聞稿上找不到答案的公開事實。這是新聞倫理的自我辯護——說得好是教育，說得差是爭辯。' },
+        like:  { echo: -5, dialogue: +8, stress: 0, clarity: +5,
+                 fb: '你按讚了指控你的人。這個動作讓他困惑了——他不確定你是在接受批評，還是在嘲諷他。' },
+        skip:  { echo: +8, dialogue: -8, stress: +10, clarity: +5,
+                 fb: '你略過了。91讚的「偽裝記者」指控繼續存在，成為這篇貼文的主要背景音。' }
+      }
+    },
+    {
+      avatar: '🌿', name: '綠方讀者', stance: 'deep_green', stanceLabel: '深綠',
+      time: '2小時前', likes: 63, replies: 4,
+      text: '五個問題全空白，結論還不夠明顯嗎？你為什麼不直說反對？記者裝中立就是在開後門給重啟。',
+      situation: '🌿 63讚。綠方認為你的「問題整理」是在替重啟核電做鋪墊，指控你給重啟開後門。',
+      actions: {
+        hide:  { echo: +12, dialogue: -10, stress: -5, clarity: -5,
+                 fb: '你隱藏了左邊的批評。你的「中立」現在在深綠眼中傾藍了，而你選擇不回應。' },
+        reply: { echo: -8, dialogue: +18, stress: +18, clarity: +20,
+                 fb: '你回覆了，說明記者的工作不是給結論而是呈現問題。說得清楚，這是新聞的力量；說不清楚，就是你承認了他的指控。' },
+        like:  { echo: -8, dialogue: +10, stress: 0, clarity: +10,
+                 fb: '你按讚了批評你開後門的人。一種知識上的誠信——「也許你說的值得想想」。' },
+        skip:  { echo: +5, dialogue: -8, stress: +8, clarity: +5,
+                 fb: '你略過了。兩邊都在罵你，你一個都不回——這在讀者眼中，是清高，還是心虛？' }
+      }
+    },
+    {
+      avatar: '🙏', name: '普通讀者', stance: 'center', stanceLabel: '中間',
+      time: '3小時前', likes: 27, replies: 0,
+      text: '謝謝整理。我終於知道哪些地方是真的沒有答案、哪些只是吵架。分享了。',
+      situation: '✨ 27讚，已轉分享。這是你這篇貼文真正達到的效果——有人因此搞懂了什麼。',
+      actions: {
+        hide:  { echo: +5, dialogue: -8, stress: 0, clarity: -10,
+                 fb: '你隱藏了感謝你的人。這裡沒有爭議，沒有攻擊——你為什麼要隱藏它？' },
+        reply: { echo: -5, dialogue: +12, stress: +3, clarity: +12,
+                 fb: '你感謝了他並說明可以繼續追哪幾個問題。這是讀者服務——記者最基本的，也最容易被遺忘的事。' },
+        like:  { echo: 0, dialogue: +10, stress: 0, clarity: +12,
+                 fb: '你按讚了。27讚的感謝繼續讓這篇貼文維持在「有用」的印象裡。' },
+        skip:  { echo: 0, dialogue: 0, stress: +3, clarity: +5,
+                 fb: '你略過了。他還是把你的報導分享出去了——你不回應，不影響他，但少了一個真實讀者的接觸。' }
+      }
+    },
+    {
+      avatar: '🤨', name: '同行記者', stance: 'center', stanceLabel: '中間',
+      time: '4小時前', likes: 44, replies: 5,
+      text: '你說「五個問題全部空白」——但核安審查其實有進度報告，你看過嗎？整理不完整就說全空白，這樣容易被攻擊。',
+      situation: '📊 44讚。同行在糾錯。他說的不是立場，是事實準確性——這才是最難回應的批評。',
+      actions: {
+        hide:  { echo: +15, dialogue: -15, stress: -8, clarity: -15,
+                 fb: '你隱藏了唯一指出事實錯誤的留言。如果他說的對，你的沉默只會讓這個錯誤繼續傳播。' },
+        reply: { echo: -10, dialogue: +25, stress: +15, clarity: +30,
+                 fb: '你回覆了，確認了核安審查的進度報告，並修正了表述。這是新聞倫理最高標準的展現——比任何對話都有價值。' },
+        like:  { echo: 0, dialogue: +15, stress: 0, clarity: +15,
+                 fb: '你按讚了批評你事實錯誤的同行。這是一種公開承認——讀者看到了你願意被糾正。' },
+        skip:  { echo: +8, dialogue: -10, stress: +8, clarity: -10,
+                 fb: '你略過了。44讚的事實糾錯沒有被回應——在讀者眼中，你默認了錯誤，或者你不敢面對同行的批評。' }
+      }
+    },
+    {
+      avatar: '😒', name: '一般留言者', stance: 'deep_green', stanceLabel: '深綠',
+      time: '5小時前', likes: 33, replies: 2,
+      text: '你以為你是誰？政府和電力公司的公開資料擺在那裡，你整理一下就叫「獨立報導」？隨便誰都能做。',
+      situation: '😏 33讚。有人在嗆你的工作沒有門檻、沒有價值——這是對記者身份最直接的挑戰。',
+      actions: {
+        hide:  { echo: +12, dialogue: -8, stress: -8, clarity: -5,
+                 fb: '你隱藏了嗆你的人。但他說的事有一個核心：如果「整理公開資料」就是報導，讀者為什麼需要記者？這個問題沒有消失。' },
+        reply: { echo: -8, dialogue: +18, stress: +20, clarity: +18,
+                 fb: '你回覆了，說明整理資料本身需要新聞判斷——哪些問題重要、哪些資料可信。說得清楚，這是記者存在的理由。' },
+        like:  { echo: 0, dialogue: +5, stress: -5, clarity: +8,
+                 fb: '你按讚了嗆你的人。一種「你說的有一部分是對的」的誠實——或者說，你也不確定自己的工作有沒有價值。' },
+        skip:  { echo: +5, dialogue: -5, stress: +10, clarity: 0,
+                 fb: '你略過了。33讚的「你以為你是誰」繼續掛在那裡，讓這篇貼文帶著一種「記者的傲慢」的隱隱標籤。' }
+      }
+    },
+    {
+      avatar: '🏆', name: '最高讚留言', stance: 'deep_blue', stanceLabel: '深藍',
+      time: '20分鐘前', likes: 178, replies: 11,
+      text: '五個問題，全部空白。好問題。那你問的這五個，哪一個你自己有答案？',
+      situation: '🔥 178讚，留言區最高讚。他沒有攻擊你的立場，他問的是：你整理問題，你自己有沒有立場？',
+      actions: {
+        hide:  { echo: +20, dialogue: -15, stress: -10, clarity: -20,
+                 fb: '你把最高讚隱藏了。這則留言問的不是立場——是記者存在的意義。你選擇不回答，它的截圖還是在外面流傳。' },
+        reply: { echo: -12, dialogue: +22, stress: +28, clarity: +30,
+                 fb: '你回覆了。「我有看法，但我的工作不是給答案。」或者「我不知道。」哪個版本才是真的？說出來，這篇貼文才算完整。' },
+        like:  { echo: -5, dialogue: +12, stress: -5, clarity: +18,
+                 fb: '你按讚了他。178讚變179讚——你承認這個問題問得好。讀者看到了一個願意被反問的記者。' },
+        skip:  { echo: +10, dialogue: -12, stress: +15, clarity: -8,
+                 fb: '你略過了。178讚的問題沒有被回答，留在最頂端。讀者開始認為：也許記者也不知道答案，只是比我們更會問問題。' }
+      }
+    }
+  ]
+};
+
+function renderStanceGrid() {
+  const grid = document.getElementById('stance-grid');
+  grid.innerHTML = '';
+  Object.values(POST_STANCES).forEach(s => {
+    const div = document.createElement('div');
+    div.className = `stance-select-card${selectedStance === s.id ? ' selected' : ''}`;
+    div.onclick = () => selectStance(s.id);
+    div.innerHTML = `
+      <div class="stance-card-header">
+        <div class="stance-card-emoji">${s.emoji}</div>
+        <div>
+          <div class="stance-card-name">${s.title}</div>
+          <span class="stance-card-tag" style="background:${s.tagBg};color:${s.tagColor};border:1px solid ${s.tagColor}40">${s.title}</span>
+        </div>
+      </div>
+      <div class="stance-card-post">你的貼文：${s.post}</div>
+      <div class="stance-card-desc">${s.desc}</div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function selectStance(id) {
+  selectedStance = id;
+  document.getElementById('stance-grid').querySelectorAll('.stance-select-card').forEach((el, i) => {
+    el.classList.toggle('selected', Object.keys(POST_STANCES)[i] === id);
+  });
+}
 
 function startGame() {
   currentRound = 0;
-  meters = { echo: 20, dialogue: 50, stress: 10, clarity: 60 };
+  meters = { ...POST_STANCES[selectedStance].startMeters };
+  activeComments = COMMENT_SETS[selectedStance];
+  actions_log.length = 0;
   showScreen('screen-game');
   loadComment();
 }
 
 function loadComment() {
-  const c = COMMENTS[currentRound];
-  const total = COMMENTS.length;
+  const c = activeComments[currentRound];
+  const total = activeComments.length;
 
   document.getElementById('round-info').textContent = `留言 ${currentRound + 1} / ${total}`;
   document.getElementById('progress-fill').style.width = `${((currentRound + 1) / total) * 100}%`;
@@ -834,7 +1116,7 @@ function loadComment() {
 }
 
 function doAction(action) {
-  const c = COMMENTS[currentRound];
+  const c = activeComments[currentRound];
   const fx = c.actions[action];
 
   Object.entries(fx).forEach(([k, v]) => {
@@ -858,7 +1140,7 @@ function doAction(action) {
 
 function nextRound() {
   currentRound++;
-  if (currentRound >= COMMENTS.length) showResult();
+  if (currentRound >= activeComments.length) showResult();
   else loadComment();
 }
 
@@ -945,10 +1227,13 @@ function shareLINE() {
 }
 function retry() {
   currentRound = 0;
-  meters = { echo: 20, dialogue: 50, stress: 10, clarity: 60 };
+  meters = { ...POST_STANCES[selectedStance].startMeters };
   actions_log.length = 0;
   showScreen('screen-intro');
 }
+
+// Init
+renderStanceGrid();
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');

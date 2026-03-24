@@ -660,7 +660,7 @@
       <h3>系統分配你的立場</h3>
       <div class="assigned-stance loading" id="stance-display">???</div>
       <div class="stance-desc" id="stance-description">正在隨機分配中……</div>
-      <button onclick="assignStance()" style="margin-top:14px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:7px 18px;font-size:0.8rem;cursor:pointer;font-family:inherit;transition:all 0.15s;" onmouseover="this.style.borderColor='#60a5fa';this.style.color='#f1f5f9'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">↺ 不滿意，重新分配</button>
+      <div id="reroll-area" style="margin-top:14px;"></div>
     </div>
 
     <div class="context-box">
@@ -676,7 +676,7 @@
       共 5 關 · 約 3 分鐘<br>
       <div class="ep-nav">
         <a class="ep-link current" href="#">▶ EP.1 臉腫了嗎？</a>
-        <span class="ep-link coming-soon">EP.2 留言室風暴 🔒</span>
+        <span class="ep-link coming-soon">EP.2 留言區風暴 🔒</span>
         <span class="ep-link coming-soon">EP.3 核廢料放你家 🔒</span>
       </div>
     </div>
@@ -803,7 +803,7 @@
       資料來源：真實 FB 貼文留言（已匿名化）
       <div class="ep-nav">
         <a class="ep-link current" href="#">▶ EP.1 臉腫了嗎？</a>
-        <span class="ep-link coming-soon">EP.2 留言室風暴 🔒</span>
+        <span class="ep-link coming-soon">EP.2 留言區風暴 🔒</span>
         <span class="ep-link coming-soon">EP.3 核廢料放你家 🔒</span>
       </div>
     </div>
@@ -1123,16 +1123,40 @@ const STANCES = {
   }
 };
 
+// ── STANCE POOL (no-repeat) ──
+let stancePool = [];
+
+function shufflePool() {
+  stancePool = Object.keys(STANCES);
+  for (let i = stancePool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [stancePool[i], stancePool[j]] = [stancePool[j], stancePool[i]];
+  }
+}
+
 // ── INIT ──
 function assignStance() {
-  const keys = Object.keys(STANCES);
-  const pool = keys.filter(k => k !== assignedStance);
-  assignedStance = pool[Math.floor(Math.random() * pool.length)];
+  if (stancePool.length === 0) {
+    // Pool exhausted — ask if user still wants to play
+    const rerollEl = document.getElementById('reroll-area');
+    if (rerollEl) {
+      rerollEl.innerHTML = `
+        <div style="padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid var(--border);text-align:center;">
+          <div style="font-size:0.95rem;font-weight:800;color:var(--text);margin-bottom:6px;">你已體驗完全部 8 種立場 🎉</div>
+          <div style="font-size:0.84rem;color:var(--muted);margin-bottom:12px;">你到底要不要玩？</div>
+          <button onclick="reshuffleAndContinue()" style="background:var(--orange);color:white;border:none;border-radius:8px;padding:8px 22px;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;">要！重新骰一輪 ↺</button>
+        </div>`;
+    }
+    return;
+  }
+
+  assignedStance = stancePool.pop();
   const s = STANCES[assignedStance];
 
   const display = document.getElementById('stance-display');
   const desc = document.getElementById('stance-description');
   const startBtn = document.getElementById('start-btn');
+  const rerollEl = document.getElementById('reroll-area');
 
   display.classList.remove('loading');
   display.textContent = s.label;
@@ -1144,6 +1168,25 @@ function assignStance() {
   } else {
     startBtn.classList.remove('blue-mode');
   }
+
+  // Update reroll button — show remaining count, or exhaustion notice
+  if (rerollEl) {
+    if (stancePool.length === 0) {
+      rerollEl.innerHTML = `
+        <div style="padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid var(--border);text-align:center;">
+          <div style="font-size:0.95rem;font-weight:800;color:var(--text);margin-bottom:6px;">你已體驗完全部 8 種立場 🎉</div>
+          <div style="font-size:0.84rem;color:var(--muted);margin-bottom:12px;">你到底要不要玩？</div>
+          <button onclick="reshuffleAndContinue()" style="background:var(--orange);color:white;border:none;border-radius:8px;padding:8px 22px;font-size:0.84rem;font-weight:700;cursor:pointer;font-family:inherit;">要！重新骰一輪 ↺</button>
+        </div>`;
+    } else {
+      rerollEl.innerHTML = `<button onclick="assignStance()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:7px 18px;font-size:0.8rem;cursor:pointer;font-family:inherit;transition:all 0.15s;" onmouseover="this.style.borderColor='#60a5fa';this.style.color='#f1f5f9'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">↺ 不滿意，重新分配（還剩 ${stancePool.length} 種）</button>`;
+    }
+  }
+}
+
+function reshuffleAndContinue() {
+  shufflePool();
+  assignStance();
 }
 
 function startGame() {
@@ -1377,6 +1420,7 @@ function showScreen(id) {
 }
 
 // ── BOOT ──
+shufflePool();
 assignStance();
 </script>
 </body>
