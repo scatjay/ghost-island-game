@@ -675,6 +675,113 @@
     letter-spacing: 0.01em;
   }
 
+  /* ── FB POST ── */
+  .fb-post {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px 12px 0 0;
+    overflow: hidden;
+  }
+  .fb-post-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px 8px;
+  }
+  .fb-poster-avatar {
+    width: 40px; height: 40px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.35rem; flex-shrink: 0;
+  }
+  .fb-poster-name { font-size: 0.9rem; font-weight: 800; line-height: 1.3; }
+  .fb-poster-time { font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
+  .fb-post-body {
+    padding: 2px 14px 12px;
+    font-size: 0.88rem; line-height: 1.72; color: var(--text);
+  }
+  .fb-engage-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 14px;
+    font-size: 0.75rem; color: var(--muted);
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .fb-action-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .fb-action-btn {
+    padding: 7px 4px; text-align: center;
+    font-size: 0.8rem; color: var(--muted); font-weight: 600;
+  }
+
+  /* ── COMMENT SECTION ── */
+  .comment-section {
+    background: var(--card);
+    border: 1px solid var(--border); border-top: none;
+    border-radius: 0 0 12px 12px;
+    padding: 12px 14px 16px;
+    margin-bottom: 0;
+  }
+  .comment-prompt-row {
+    display: flex; align-items: flex-start; gap: 9px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 12px;
+  }
+  .comment-your-avatar {
+    width: 30px; height: 30px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0; margin-top: 1px;
+  }
+  .comment-prompt-text {
+    flex: 1; font-size: 0.9rem; font-weight: 700;
+    line-height: 1.4; color: var(--text); padding-top: 4px;
+  }
+  .comment-list { display: flex; flex-direction: column; gap: 8px; }
+
+  /* ── COMMENT CHOICES ── */
+  .comment-choice {
+    display: flex; gap: 8px;
+    cursor: pointer; border-radius: 10px;
+    padding: 4px 4px; transition: background 0.12s;
+  }
+  .comment-choice:hover { background: rgba(255,255,255,0.03); }
+  .comment-choice-avatar {
+    width: 30px; height: 30px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0; margin-top: 2px;
+  }
+  .comment-choice-body { flex: 1; min-width: 0; }
+  .comment-bubble {
+    background: var(--darker);
+    border-radius: 14px; padding: 8px 12px; margin-bottom: 3px;
+    border: 1.5px solid transparent;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .comment-bubble-name {
+    font-size: 0.72rem; font-weight: 800; margin-bottom: 3px;
+    color: var(--muted); letter-spacing: 0.3px;
+  }
+  .comment-bubble-text { font-size: 0.88rem; line-height: 1.55; }
+  .comment-meta { font-size: 0.68rem; color: var(--muted); padding: 0 2px; font-weight: 600; }
+  .comment-effect { font-size: 0.68rem; color: var(--muted); padding: 2px 2px 0; display: none; }
+  .comment-choice.revealed .comment-effect { display: block; }
+  .comment-choice.emotion-rage .comment-bubble     { border-color: rgba(220,38,38,0.22); }
+  .comment-choice.emotion-reason .comment-bubble   { border-color: rgba(96,165,250,0.22); }
+  .comment-choice.emotion-influence .comment-bubble{ border-color: rgba(202,138,4,0.22); }
+  .comment-choice.emotion-neutral .comment-bubble  { border-color: rgba(148,163,184,0.14); }
+  .comment-choice.emotion-rage:hover .comment-bubble     { border-color: rgba(220,38,38,0.65); background: rgba(220,38,38,0.05); }
+  .comment-choice.emotion-reason:hover .comment-bubble   { border-color: rgba(96,165,250,0.65); background: rgba(96,165,250,0.05); }
+  .comment-choice.emotion-influence:hover .comment-bubble{ border-color: rgba(202,138,4,0.65); background: rgba(202,138,4,0.05); }
+  .comment-choice.emotion-neutral:hover .comment-bubble  { border-color: rgba(148,163,184,0.45); }
+  .comment-choice.disabled { opacity: 0.5; pointer-events: none; }
+  .comment-choice.selected .comment-bubble { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.4); }
+  .comment-choice.selected .comment-bubble-name { color: #4ade80; }
+
   /* ── ANIMATIONS ── */
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(8px); }
@@ -775,10 +882,34 @@
     <!-- 角色識別卡 -->
     <div class="player-card" id="player-card"></div>
 
-    <div class="question-card">
-      <div class="question-context" id="q-context"></div>
-      <div class="question-text" id="q-text"></div>
-      <div class="choices" id="choices-container"></div>
+    <!-- FB-style post -->
+    <div class="fb-post">
+      <div class="fb-post-header">
+        <div class="fb-poster-avatar" id="fb-poster-avatar">📰</div>
+        <div>
+          <div class="fb-poster-name" id="fb-poster-name">時事熱議</div>
+          <div class="fb-poster-time" id="fb-poster-time">3小時前 · 🌐</div>
+        </div>
+      </div>
+      <div class="fb-post-body" id="q-context"></div>
+      <div class="fb-engage-row">
+        <span>👍 ❤️ 😮 <span id="fb-likes">231</span></span>
+        <span>615 則留言</span>
+      </div>
+      <div class="fb-action-row">
+        <div class="fb-action-btn">👍 讚</div>
+        <div class="fb-action-btn">💬 留言</div>
+        <div class="fb-action-btn">↗ 分享</div>
+      </div>
+    </div>
+
+    <!-- Comment section -->
+    <div class="comment-section">
+      <div class="comment-prompt-row">
+        <div class="comment-your-avatar" id="comment-your-avatar">😐</div>
+        <div class="comment-prompt-text" id="q-text">你要怎麼回應？</div>
+      </div>
+      <div class="comment-list" id="choices-container"></div>
       <div class="feedback-box" id="feedback-box"></div>
       <button class="next-btn" id="next-btn" onclick="nextRound()">繼續 →</button>
     </div>
@@ -1955,8 +2086,30 @@ function loadRound() {
   document.getElementById('round-label').textContent = `第 ${currentRound + 1} 關 / ${total}`;
   document.getElementById('progress-fill').style.width = `${((currentRound + 1) / total) * 100}%`;
 
-  document.getElementById('q-context').innerHTML = addTooltips(q.context);
-  // Use role-specific prompt if available, otherwise fall back to default text
+  // ── FB post header ──
+  const POSTER_MAP = {
+    '📰':'新聞媒體分享','🏛️':'政治新聞','🌐':'網路熱議',
+    '📊':'數據整理','📢':'公告消息','⚡':'用電話題',
+    '🗳️':'選舉回顧','🌱':'環保倡議','📱':'網紅動態',
+    '🔬':'主管機關發言','🏷️':'截圖流傳','💡':'留言熱議',
+    '🔆':'能源議題','🤔':'輿論觀察','💬':'熱門討論',
+  };
+  const POSTER_TIMES = ['1小時前','2小時前','3小時前','5小時前','8小時前','12小時前'];
+  const ctxRaw = q.context.replace(/<[^>]+>/g,'');
+  const emojiM = ctxRaw.match(/^([\u{1F000}-\u{1FFFF}]\uFE0F?|[\u{2600}-\u{27BF}]\uFE0F?)/u);
+  const postEmoji = emojiM ? emojiM[1] : '💬';
+  const posterName = POSTER_MAP[postEmoji] || '時事熱議';
+  // Strip leading emoji+space from display body
+  const bodyStart = emojiM ? [...emojiM[0]].length : 0;
+  const postBody = q.context.slice(bodyStart).replace(/^\s+/,'');
+  const LIKE_COUNTS = [178,231,305,142,89,413,267,194,328,156,241,87,362,210,445];
+  document.getElementById('fb-poster-avatar').textContent = postEmoji;
+  document.getElementById('fb-poster-name').textContent = posterName;
+  document.getElementById('fb-poster-time').textContent = POSTER_TIMES[currentRound % POSTER_TIMES.length] + ' · 🌐';
+  document.getElementById('fb-likes').textContent = LIKE_COUNTS[currentRound % LIKE_COUNTS.length];
+  document.getElementById('q-context').innerHTML = addTooltips(postBody);
+
+  // ── Prompt + player card ──
   const promptText = (q.rolePrompts && q.rolePrompts[assignedStance]) ? q.rolePrompts[assignedStance] : q.text;
   document.getElementById('q-text').innerHTML = addTooltips(promptText);
 
@@ -1979,24 +2132,35 @@ function loadRound() {
       <div class="player-card-tend">${s.tendencyLabel}</div>
     </div>
   `;
+  // Mini avatar in comment prompt
+  const miniAvatar = document.getElementById('comment-your-avatar');
+  if (miniAvatar) miniAvatar.textContent = emoji;
 
+  // ── Render choices as comments ──
+  const EMOTION_EMOJI = { rage:'😤', reason:'🧐', influence:'📢', neutral:'🤷' };
   const container = document.getElementById('choices-container');
   container.innerHTML = '';
   q.choices.forEach((choice, i) => {
-    const btn = document.createElement('button');
     const e = choice.effects;
     const dominant = (e.rage > 0 && e.rage >= Math.max(e.reason||0, e.influence||0, e.cred||0))
       ? 'rage' : (e.reason > 0 && e.reason >= Math.max(e.rage||0, e.influence||0, e.cred||0))
       ? 'reason' : (e.influence > 0 && e.influence >= Math.max(e.rage||0, e.reason||0, e.cred||0))
       ? 'influence' : 'neutral';
-    btn.className = `choice-btn emotion-${dominant}`;
-    btn.innerHTML = `
-      <div class="choice-label">${choice.label}</div>
-      <div class="choice-text">${addTooltips(choice.text)}</div>
-      <div class="choice-effect">${formatEffects(choice.effects)}</div>
+    const div = document.createElement('div');
+    div.className = `comment-choice emotion-${dominant}`;
+    div.innerHTML = `
+      <div class="comment-choice-avatar">${EMOTION_EMOJI[dominant] || '💬'}</div>
+      <div class="comment-choice-body">
+        <div class="comment-bubble">
+          <div class="comment-bubble-name">${choice.label}</div>
+          <div class="comment-bubble-text">${addTooltips(choice.text)}</div>
+        </div>
+        <div class="comment-meta">👍 讚 · 回覆</div>
+        <div class="comment-effect">${formatEffects(choice.effects)}</div>
+      </div>
     `;
-    btn.onclick = () => selectChoice(i);
-    container.appendChild(btn);
+    div.onclick = () => selectChoice(i);
+    container.appendChild(div);
   });
 
   document.getElementById('feedback-box').className = 'feedback-box';
@@ -2014,7 +2178,7 @@ function formatEffects(effects) {
 }
 
 function selectChoice(index) {
-  const q = QUESTIONS[currentRound];
+  const q = activeQuestions[currentRound];
   const choice = q.choices[index];
 
   // Save old stats for delta animation
@@ -2031,13 +2195,12 @@ function selectChoice(index) {
   }
 
   // Visual feedback
-  const buttons = document.querySelectorAll('.choice-btn');
-  buttons.forEach((btn, i) => {
-    btn.classList.add('disabled');
+  const comments = document.querySelectorAll('.comment-choice');
+  comments.forEach((c, i) => {
+    c.classList.add('disabled');
     if (i === index) {
-      const t = choice.tendency;
-      btn.classList.add(t === 'green' ? 'selected-green' : t === 'blue' ? 'selected-blue' : 'selected-neutral');
-      btn.classList.add('revealed');
+      c.classList.add('selected');
+      c.classList.add('revealed');
     }
   });
 

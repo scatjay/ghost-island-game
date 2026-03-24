@@ -38,8 +38,48 @@
     padding: 48px 20px 36px;
     text-align: center;
   }
-  .hero-island { font-size: 4rem; display: block; margin-bottom: 12px; animation: float 4s ease-in-out infinite; }
-  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  /* ── HERO ISLAND SCENE ── */
+  .hero-scene {
+    display: block; position: relative; margin: 0 auto 12px;
+    width: 120px; height: 88px;
+  }
+  /* 椰子樹 */
+  .hero-tree {
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    font-size: 3.4rem; line-height: 1;
+    animation: treeSway 5s ease-in-out infinite;
+    transform-origin: bottom center;
+  }
+  @keyframes treeSway {
+    0%,100%{ transform: translateX(-50%) rotate(0deg); }
+    25%    { transform: translateX(-50%) rotate(3deg); }
+    75%    { transform: translateX(-50%) rotate(-2.5deg); }
+  }
+  /* 掉落的葉子 */
+  .hero-leaf {
+    position: absolute; top: 8px; left: 50%; margin-left: 8px;
+    font-size: 1.1rem; opacity: 0;
+    animation: leafFall 4.5s ease-in 1.2s infinite;
+    transform-origin: top left;
+  }
+  @keyframes leafFall {
+    0%  { opacity:0; transform: translate(0,0) rotate(0deg); }
+    8%  { opacity:1; }
+    80% { opacity:0.7; transform: translate(28px, 52px) rotate(180deg); }
+    100%{ opacity:0; transform: translate(34px, 60px) rotate(200deg); }
+  }
+  /* 鯨魚 */
+  .hero-whale {
+    position: absolute; bottom: 0; left: 50%; margin-left: -68px;
+    font-size: 1.6rem; line-height: 1;
+    animation: whaleFloat 6s ease-in-out 0.8s infinite;
+  }
+  @keyframes whaleFloat {
+    0%,100%{ transform: translateY(0) scaleX(1); }
+    40%    { transform: translateY(-6px) scaleX(1); }
+    50%    { transform: translateY(-6px) scaleX(-1); }
+    90%    { transform: translateY(0) scaleX(-1); }
+  }
   .hero-badge {
     display: inline-block; background: var(--border); color: var(--muted);
     font-size: 0.72rem; padding: 3px 12px; border-radius: 20px; margin-bottom: 14px;
@@ -119,7 +159,11 @@
 
   <!-- HERO -->
   <div class="hero">
-    <span class="hero-island">🏝️</span>
+    <span class="hero-scene" aria-hidden="true">
+      <span class="hero-whale">🐋</span>
+      <span class="hero-tree">🌴</span>
+      <span class="hero-leaf">🍃</span>
+    </span>
     <div class="hero-badge">府城數位人文實驗室</div>
     <h1 class="hero-title">鬼島<span>鄉民</span>測驗</h1>
     <p class="hero-sub">島上最吵的議題，換個角度體驗。<br>不是要你選邊站，是讓你看見自己怎麼站。</p>
