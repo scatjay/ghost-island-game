@@ -1126,7 +1126,8 @@ const STANCES = {
 // ── INIT ──
 function assignStance() {
   const keys = Object.keys(STANCES);
-  assignedStance = keys[Math.floor(Math.random() * keys.length)];
+  const pool = keys.filter(k => k !== assignedStance);
+  assignedStance = pool[Math.floor(Math.random() * pool.length)];
   const s = STANCES[assignedStance];
 
   const display = document.getElementById('stance-display');
