@@ -128,6 +128,21 @@
     color: #c084fc;
     border: 2px solid #c084fc;
   }
+  .assigned-stance.engineer-stance {
+    background: rgba(99,102,241,0.2);
+    color: #a5b4fc;
+    border: 2px solid #a5b4fc;
+  }
+  .assigned-stance.media-stance {
+    background: rgba(236,72,153,0.2);
+    color: #f9a8d4;
+    border: 2px solid #f9a8d4;
+  }
+  .assigned-stance.exhausted-stance {
+    background: rgba(100,116,139,0.2);
+    color: #94a3b8;
+    border: 2px solid #94a3b8;
+  }
   .stance-desc {
     font-size: 0.9rem;
     color: var(--muted);
@@ -229,6 +244,9 @@
   .stance-tag.eco { background: rgba(6,182,212,0.2); color: #22d3ee; }
   .stance-tag.pragmatic { background: rgba(202,138,4,0.2); color: #fbbf24; }
   .stance-tag.partisan { background: rgba(168,85,247,0.2); color: #c084fc; }
+  .stance-tag.engineer { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+  .stance-tag.media { background: rgba(236,72,153,0.2); color: #f9a8d4; }
+  .stance-tag.exhausted { background: rgba(100,116,139,0.2); color: #94a3b8; }
 
   /* ── CHOICES ── */
   .choices { display: flex; flex-direction: column; gap: 10px; }
@@ -1070,6 +1088,36 @@ const STANCES = {
     tendencyLabel: '在野傾向',
     blueMode: true,
     desc: '你不一定每個核電細節都搞得清楚，但你知道執政黨說什麼你第一個要質疑。今天的新聞讓你有點困惑——反核一直是進步立場，但現在是誰在反誰？'
+  },
+  engineer: {
+    label: '🔬 理工仔',
+    cssClass: 'engineer-stance',
+    tagClass: 'engineer',
+    tagLabel: '理工仔 🔬',
+    tendencyClass: 'neutral',
+    tendencyLabel: '技術理性',
+    blueMode: false,
+    desc: '你看過核安報告，也看過廢料最終處置的技術文件。你覺得大部分的討論都在廢話。問題不是核電安不安全，問題是廢料放哪裡、誰監管、幾百年後算誰的——這些問題沒有人認真回答。'
+  },
+  media: {
+    label: '📰 媒體工作者',
+    cssClass: 'media-stance',
+    tagClass: 'media',
+    tagLabel: '媒體工作者 📰',
+    tendencyClass: 'neutral',
+    tendencyLabel: '輿論觀察',
+    blueMode: false,
+    desc: '你整天在追這個議題的留言，分析哪些是真實民意，哪些是帶風向。你比任何人都了解輿論的運作——也比任何人都清楚，了解運作不代表你免疫。你的立場是什麼？你自己也開始說不清楚。'
+  },
+  exhausted: {
+    label: '😮‍💨 政治疲憊族',
+    cssClass: 'exhausted-stance',
+    tagClass: 'exhausted',
+    tagLabel: '政治疲憊族 😮‍💨',
+    tendencyClass: 'neutral',
+    tendencyLabel: '倦怠中立',
+    blueMode: false,
+    desc: '你已經看過太多次了。選舉、爭議、口水、然後什麼都沒變。這次核電的事你也看了，覺得兩邊都在演戲。你不想再輸入意見了，但你也沒辦法完全不在意。'
   }
 };
 
