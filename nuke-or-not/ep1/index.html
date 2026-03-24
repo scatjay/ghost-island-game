@@ -2102,6 +2102,7 @@ function buildActiveQuestions() {
 function startGame() {
   currentRound = 0;
   stats = { rage: 0, reason: 0, influence: 0, cred: 0 };
+  trackPlay('ep1');
   buildActiveQuestions();
   showScreen('screen-game');
   loadRound();
@@ -2410,6 +2411,24 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
+}
+
+// ── PLAY COUNTER ──
+const SB_URL = '';  // 填入 Supabase URL 啟用全域計數
+const SB_KEY = '';  // 填入 Supabase anon key
+
+async function trackPlay(game) {
+  const k = `ghost_plays_${game}`;
+  localStorage.setItem(k, String(parseInt(localStorage.getItem(k) || '0', 10) + 1));
+  if (SB_URL && SB_KEY) {
+    try {
+      await fetch(`${SB_URL}/rest/v1/rpc/increment_play`, {
+        method: 'POST',
+        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gid: game })
+      });
+    } catch(e) {}
+  }
 }
 
 // ── BOOT ──

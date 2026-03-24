@@ -746,6 +746,7 @@ function selectSite(siteId) {
 
 function confirmSite() {
   if (!selectedSiteId) return;
+  trackPlay('ep3');
   const role = ROLES[selectedRoleId];
   currentRound = 0;
   stats = { ...role.start };
@@ -1019,6 +1020,24 @@ function copyResult(event) {
 function restartGame() {
   selectedSiteId = null;
   goToSiteSelect();
+}
+
+// ── PLAY COUNTER ──
+const SB_URL = '';
+const SB_KEY = '';
+
+async function trackPlay(game) {
+  const k = `ghost_plays_${game}`;
+  localStorage.setItem(k, String(parseInt(localStorage.getItem(k) || '0', 10) + 1));
+  if (SB_URL && SB_KEY) {
+    try {
+      await fetch(`${SB_URL}/rest/v1/rpc/increment_play`, {
+        method: 'POST',
+        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gid: game })
+      });
+    } catch(e) {}
+  }
 }
 </script>
 </body>

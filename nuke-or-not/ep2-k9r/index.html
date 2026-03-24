@@ -1091,6 +1091,7 @@ function startGame() {
   meters = { ...POST_STANCES[selectedStance].startMeters };
   activeComments = COMMENT_SETS[selectedStance];
   actions_log.length = 0;
+  trackPlay('ep2');
   showScreen('screen-game');
   loadComment();
 }
@@ -1250,6 +1251,24 @@ function shareLINE() {
   const msg = document.getElementById('share-text').textContent;
   window.open(`https://line.me/R/msg/text/?${encodeURIComponent(msg)}`, '_blank');
 }
+// ── PLAY COUNTER ──
+const SB_URL = '';
+const SB_KEY = '';
+
+async function trackPlay(game) {
+  const k = `ghost_plays_${game}`;
+  localStorage.setItem(k, String(parseInt(localStorage.getItem(k) || '0', 10) + 1));
+  if (SB_URL && SB_KEY) {
+    try {
+      await fetch(`${SB_URL}/rest/v1/rpc/increment_play`, {
+        method: 'POST',
+        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gid: game })
+      });
+    } catch(e) {}
+  }
+}
+
 function retry() {
   currentRound = 0;
   meters = { ...POST_STANCES[selectedStance].startMeters };
