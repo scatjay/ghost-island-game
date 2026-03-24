@@ -735,37 +735,37 @@ function showResult() {
   if (selectedSiteId === 'island') {
     resultType = '歷史重演者';
     resultDesc = '你選擇了幽嶼。不管你的回應策略有多謹慎，有多少傾聽姿態，你做了一個根本性的決定：把廢料放在已經被傷害過的地方。黑潮族人聽你說了很多話，但他們記住的只有一件事——你選了幽嶼。';
-    insight = '幽嶼的低階核廢料問題至今未解決，高達近十萬桶廢料儲放於島上，遷出計畫多次延宕。今天的公聽會，是下一個四十年的開始，還是另一場走程序的表演？';
+    insight = '幽嶼的遷出計畫從幾十年前就開始「認真討論」了。每一任部長都說會解決，然後任期結束。你今天開了一場公聽會，感覺很負責任。恭喜你，你已經成為這個故事的最新一個章節。';
   }
   // High acceptance + high trust = rare success
   else if (opinion >= 60 && trust >= 60) {
     resultType = '民主典範（稀有）';
     resultDesc = '你做到了一件很難的事：在公聽會上獲得了相對高的民意接受度和社會信任。這不是因為問題解決了，而是因為你沒有迴避、沒有收買、也沒有用國家機器壓過去。這種結果在真實的能源政策中，幾乎不存在。';
-    insight = `選址：${site.name}。民意接受度 ${opinion}，社會信任 ${trust}。你主要使用了「${RESPONSES.find(r=>r.id===dominant).type}」策略。這個結果提醒我們：民主不是不可能，只是需要比任何政治人物想像的都更長的時間和更真誠的姿態。`;
+    insight = `選址：${site.name}。民意 ${opinion}，信任 ${trust}。你用的是「${RESPONSES.find(r=>r.id===dominant).type}」。這個組合在真實能源政策史上幾乎沒有出現過。如果有一天真的出現了，請截圖——那會是教科書等級的事件，你的名字可能會出現在某個公共行政課程的案例分析裡。`;
   }
   // Passed but low trust
   else if (opinion >= 55 && trust < 55) {
     resultType = '勉強過關型';
     resultDesc = '公聽會通過了，但沒有人真正滿意。你的補償和說明讓反對聲音小了一點，但對方心裡清楚：這個決定從一開始就不是真正的商量。他們同意，因為他們輸了，不是因為你說服了他們。';
-    insight = `選址：${site.name}。民意 ${opinion}，信任 ${trust}，政治存活 ${political}。「勉強過關」是島上許多重大政策的命運——沒有共識，只有耗損。`;
+    insight = `選址：${site.name}。民意 ${opinion}，信任 ${trust}，政治存活 ${political}。「勉強過關」其實是島上基礎建設的標配——你查一下，幾乎每條重大工程都這樣蓋起來的。沒有人滿意，但事情發生了。這叫做「民主的日常」，或者叫做「大家都太累了」。`;
   }
   // Political collapse
   else if (political < 30) {
     resultType = '內閣垮台型';
     resultDesc = '公聽會結束了，你的政治生命也差不多了。你可能選了技術上正確的地點，可能也盡力傾聽了，但在民主體制中，一個讓自己的政治存活歸零的決定，就是沒有決定。核廢料的問題繼續留給下一任部長。';
-    insight = `選址：${site.name}。政治存活剩 ${political}。這就是為什麼島上的最終處置場問題已懸置超過三十年——沒有政府願意讓自己成為垮台的那一任。`;
+    insight = `選址：${site.name}。政治存活剩 ${political}。島上的最終處置場問題懸置了幾十年，每一任部長的標準動作是：開個研討會、成立一個委員會、然後在任期結束前把問題完整打包交給繼任者。你選擇了不一樣的路。核廢料還在，但你已經不在了。`;
   }
   // Low opinion, still standing
   else if (opinion < 40) {
     resultType = '強行推進型';
     resultDesc = '你撐下來了，但代價是民意的全面崩解。你的選址可能在技術上有道理，但你用的方式告訴所有人：這個政府不需要他們的同意，只需要他們接受。這種核廢料被「放」進去了，但埋下的是另一種更難處理的廢料——不信任。';
-    insight = `選址：${site.name}。民意僅剩 ${opinion}，社會信任 ${trust}。強行推進的選址，往往在下一任政府上台後被停止或翻轉，核廢料又回到「沒有家」的狀態。`;
+    insight = `選址：${site.name}。民意 ${opinion}，信任 ${trust}。強行放進去的東西，通常在下一次政黨輪替後的第一個月就被翻案。然後核廢料又沒有地方去了。然後又是二十年。然後又一個部長說：「我們要認真面對這個問題。」你知道接下來會怎樣。`;
   }
   // Default
   else {
     resultType = '折衷妥協型';
     resultDesc = '你在衝突與迴避之間找到了某種平衡。既沒有完全失去民心，也沒有建立真正的信任。這是最常見的政治選擇，也是為什麼問題不斷被拖延的原因。';
-    insight = `選址：${site.name}。民意 ${opinion}，信任 ${trust}，政治存活 ${political}。你的主要策略是「${RESPONSES.find(r=>r.id===dominant).type}」。折衷的結果是：沒有人滿意，但大家都還在。`;
+    insight = `選址：${site.name}。民意 ${opinion}，信任 ${trust}，政治存活 ${political}。主要策略：「${RESPONSES.find(r=>r.id===dominant).type}」。折衷的學名叫「迴避性共識」——所有人都說「這樣也可以吧」，但沒有人真的同意。這是島上把問題留給下一代最有效率的方式。`;
   }
 
   // Strategy summary
@@ -804,7 +804,7 @@ function showResult() {
       <div class="strategy-list">${stratHTML}</div>
 
       <div class="comparison-box">
-        <div class="ct">▌ 現況對照</div>
+        <div class="ct">▌ 現實插播</div>
         ${insight}
       </div>
 
