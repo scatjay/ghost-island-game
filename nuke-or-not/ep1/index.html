@@ -1184,7 +1184,16 @@ function showResult() {
 
   // Share text
   const gameUrl = 'https://scatjay.github.io/ghost-island-game/nuke-or-not/ep1/';
-  const shareMsg = `我在《臉腫了嗎？》被分配到「${assignedLabel}」，結果測出來是「${a.title}」。\n\n${a.desc.split('。')[0]}。\n\n你的直覺和你的人設一樣嗎？→ ${gameUrl}\n\n#鬼島鄉民測驗 #核電篇`;
+  const shareQuips = {
+    fire_kimin:   `系統強制分配我當「${assignedLabel}」，核電這題我測出「🔥 火爆鄉民」。\n不是我的立場，是我的血壓。\n兩邊都在說自己理性，兩邊留言都像菜市場。`,
+    calm_analyst: `被迫扮「${assignedLabel}」走完全程，最後測出「🔭 冷靜分析師」。\n留言區三個讚，謾罵一百讚。這是鬼島的物理定律。\n我知道這沒用，但我還是把完整數據都看完了。`,
+    influencer:   `被分配成「${assignedLabel}」，一路跟著流量走，測出「📱 側翼網紅」。\n我不確定我在幫誰，但讚數不會說謊。\n核電要不要重啟我不知道，但這篇貼文一定有人轉。`,
+    skeptic:      `被迫站「${assignedLabel}」，結果測出「🤔 懷疑論者」。\n我誰都不信。連這個測驗我也只信一半。\n（但我還是分享了。這很矛盾。我知道。）`,
+    mob_member:   `系統塞給我「${assignedLabel}」的身份，測完是「⚡ 出征隊員」。\n呼叫就出現，問題是被誰呼叫、去打誰，我其實不太確定。\n反正島上的架就是這樣吵起來的。`,
+    silent_lurker:`被分配成「${assignedLabel}」，做了五道題，測出「👻 無聲潛水者」。\n核電吵了半個月，我全看了，什麼都沒說。\n這則分享已經打破了我的原則。請不要叫我解釋。`
+  };
+  const quip = shareQuips[archetype] || shareQuips['silent_lurker'];
+  const shareMsg = `${quip}\n\n→ ${gameUrl}\n#鬼島鄉民測驗 #核電篇`;
   document.getElementById('share-text').textContent = shareMsg;
 
   showScreen('screen-result');
