@@ -866,6 +866,7 @@ let currentRound = 0;
 let stats = { rage: 0, reason: 0, influence: 0, cred: 0 };
 let naturalTendency = '';
 let activeQuestions = [];  // selected + shuffled subset of QUESTION_POOL
+let questionPool   = [];  // remaining question indices (pool, no-repeat across games)
 
 // ── QUESTION POOL (10 題，每局隨機取 5，順序打亂) ──
 const QUESTION_POOL = [
@@ -1481,14 +1482,21 @@ function reshuffleAndContinue() {
   assignStance();
 }
 
-function buildActiveQuestions() {
-  // Fisher-Yates shuffle of full pool
-  const pool = [...QUESTION_POOL];
-  for (let i = pool.length - 1; i > 0; i--) {
+function refillQuestionPool() {
+  // Shuffle all 10 indices into questionPool
+  questionPool = QUESTION_POOL.map((_, i) => i);
+  for (let i = questionPool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
+    [questionPool[i], questionPool[j]] = [questionPool[j], questionPool[i]];
   }
-  activeQuestions = pool.slice(0, 5);
+}
+
+function buildActiveQuestions() {
+  // If fewer than 5 left, replenish (guarantees cross-game no-repeat within a cycle)
+  if (questionPool.length < 5) refillQuestionPool();
+  // Draw next 5 from pool (splice removes them so they can't appear next game)
+  const indices = questionPool.splice(0, 5);
+  activeQuestions = indices.map(i => QUESTION_POOL[i]);
 }
 
 function startGame() {
@@ -1759,6 +1767,7 @@ function showScreen(id) {
 
 // ── BOOT ──
 shufflePool();
+refillQuestionPool();
 assignStance();
 </script>
 </body>
