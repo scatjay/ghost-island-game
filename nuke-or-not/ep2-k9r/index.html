@@ -173,6 +173,18 @@
   .meter-fill.stress { background: var(--red); }
   .meter-fill.clarity { background: var(--green); }
 
+  /* ── METER CHANGE ANIMATIONS ── */
+  @keyframes valBump { 0%{transform:scale(1)} 35%{transform:scale(1.35)} 100%{transform:scale(1)} }
+  @keyframes deltaFloat { 0%{opacity:1;transform:translateY(0)} 30%{opacity:1} 100%{opacity:0;transform:translateY(-14px)} }
+  .meter-header { position: relative; }
+  .meter-value.bumping { animation: valBump 0.35s ease; }
+  .delta-badge {
+    position: absolute; right: 0; top: -13px;
+    font-size: 0.68rem; font-weight: 800; line-height: 1;
+    animation: deltaFloat 0.75s ease forwards;
+    pointer-events: none;
+  }
+
   /* COMMENT CARD */
   .round-info {
     font-size: 0.78rem;
@@ -1118,6 +1130,7 @@ function loadComment() {
 function doAction(action) {
   const c = activeComments[currentRound];
   const fx = c.actions[action];
+  const oldMeters = { ...meters };
 
   Object.entries(fx).forEach(([k, v]) => {
     if (k !== 'fb') meters[k] = Math.max(0, Math.min(100, meters[k] + v));
@@ -1135,7 +1148,7 @@ function doAction(action) {
   fb.classList.add('show');
 
   document.getElementById('next-btn').classList.add('show');
-  updateMeters();
+  updateMeters(oldMeters);
 }
 
 function nextRound() {
@@ -1144,10 +1157,24 @@ function nextRound() {
   else loadComment();
 }
 
-function updateMeters() {
+function updateMeters(old) {
   ['echo','dialogue','stress','clarity'].forEach(k => {
-    document.getElementById(`m-${k}`).textContent = meters[k];
+    const valEl = document.getElementById(`m-${k}`);
+    valEl.textContent = meters[k];
     document.getElementById(`fill-${k}`).style.width = meters[k] + '%';
+    if (old && meters[k] !== old[k]) {
+      const d = meters[k] - old[k];
+      valEl.classList.remove('bumping');
+      void valEl.offsetWidth;
+      valEl.classList.add('bumping');
+      setTimeout(() => valEl.classList.remove('bumping'), 400);
+      const badge = document.createElement('span');
+      badge.className = 'delta-badge';
+      badge.textContent = (d > 0 ? '+' : '') + d;
+      badge.style.color = d > 0 ? '#4ade80' : '#f87171';
+      valEl.parentElement.appendChild(badge);
+      setTimeout(() => badge.remove(), 800);
+    }
   });
 }
 

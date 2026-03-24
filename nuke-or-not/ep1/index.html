@@ -349,6 +349,18 @@
   .stat-fill.influence { background: var(--yellow); }
   .stat-fill.cred { background: var(--green); }
 
+  /* ── STAT CHANGE ANIMATIONS ── */
+  @keyframes valBump { 0%{transform:scale(1)} 35%{transform:scale(1.35)} 100%{transform:scale(1)} }
+  @keyframes deltaFloat { 0%{opacity:1;transform:translateY(0)} 30%{opacity:1} 100%{opacity:0;transform:translateY(-14px)} }
+  .stat-header { position: relative; }
+  .stat-value.bumping { animation: valBump 0.35s ease; }
+  .delta-badge {
+    position: absolute; right: 0; top: -13px;
+    font-size: 0.68rem; font-weight: 800; line-height: 1;
+    animation: deltaFloat 0.75s ease forwards;
+    pointer-events: none;
+  }
+
   /* ── FEEDBACK ── */
   .feedback-box {
     background: rgba(255,255,255,0.04);
@@ -1254,6 +1266,9 @@ function selectChoice(index) {
   const q = QUESTIONS[currentRound];
   const choice = q.choices[index];
 
+  // Save old stats for delta animation
+  const oldStats = { ...stats };
+
   // Apply effects
   Object.entries(choice.effects).forEach(([k, v]) => {
     stats[k] = Math.max(0, Math.min(100, stats[k] + v));
@@ -1281,7 +1296,7 @@ function selectChoice(index) {
   fb.classList.add('show');
 
   document.getElementById('next-btn').classList.add('show');
-  updateStatsDisplay(true);
+  updateStatsDisplay(true, oldStats);
 }
 
 function nextRound() {
@@ -1293,16 +1308,31 @@ function nextRound() {
   }
 }
 
-function updateStatsDisplay(flash) {
+function updateStatsDisplay(flash, old) {
   ['rage', 'reason', 'influence', 'cred'].forEach(k => {
-    document.getElementById(`stat-${k}`).textContent = stats[k];
+    const valEl = document.getElementById(`stat-${k}`);
+    valEl.textContent = stats[k];
     const fill = document.getElementById(`fill-${k}`);
     fill.style.width = stats[k] + '%';
     if (flash && stats[k] > 0) {
       fill.classList.remove('flash');
-      void fill.offsetWidth; // reflow to restart animation
+      void fill.offsetWidth;
       fill.classList.add('flash');
       setTimeout(() => fill.classList.remove('flash'), 500);
+    }
+    // Delta badge + number bump
+    if (old && stats[k] !== old[k]) {
+      const d = stats[k] - old[k];
+      valEl.classList.remove('bumping');
+      void valEl.offsetWidth;
+      valEl.classList.add('bumping');
+      setTimeout(() => valEl.classList.remove('bumping'), 400);
+      const badge = document.createElement('span');
+      badge.className = 'delta-badge';
+      badge.textContent = (d > 0 ? '+' : '') + d;
+      badge.style.color = d > 0 ? '#4ade80' : '#f87171';
+      valEl.parentElement.appendChild(badge);
+      setTimeout(() => badge.remove(), 800);
     }
   });
 }
